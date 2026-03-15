@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MoodTunes — Feel Every Beat</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- External stylesheet — all styles live here -->
+  <link rel="stylesheet" href="tunes.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAVIGATION
+     Buttons call go() from tunes.js.
+     id="nb-{page}" used by JS to highlight
+     the active page's button.
+═══════════════════════════════════════════ -->
+<nav>
+  <div class="logo" onclick="go('home')">🎵 MoodTunes</div>
+  <ul class="nav-links">
+    <li><button id="nb-home"     onclick="go('home')">Home</button></li>
+    <li><button id="nb-explore"  onclick="go('explore')">Explore</button></li>
+    <li><button id="nb-charts"   onclick="go('charts')">Charts</button></li>
+    <li><button id="nb-moods"    onclick="go('moods')">Moods</button></li>
+    <li><button id="nb-profile"  onclick="go('profile')">Profile</button></li>
+    <li><button id="nb-login"    onclick="go('login')" class="nav-cta">Sign In</button></li>
+  </ul>
+</nav>
+
+<!-- Toast notification — shown/hidden by JS toast() -->
+<div id="toast">🎵 <span id="tmsg"></span></div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE: HOME
+     id="page-home" — JS adds .active to show
+═══════════════════════════════════════════ -->
+<div id="page-home" class="page">
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div><span class="pill pill-p">✨ Your Mood. Your Music.</span></div>
+    <h1>Feel Every Beat<span class="grad-line">Match Every Mood</span></h1>
+    <p>Handpicked playlists tuned exactly to how you're feeling — from sunrise highs to midnight lows.</p>
+    <div class="hero-btns">
+      <button class="btn btn-main" onclick="go('moods')">🎧 Pick a Mood</button>
+      <button class="btn btn-ghost" onclick="go('explore')">Explore Music</button>
+    </div>
+  </section>
+
+  <!-- Marquee Ticker -->
+  <div class="marquee-wrap">
+    <div class="marquee-track">
+      <span>😊 <strong>Happy</strong> &nbsp;·&nbsp;</span>
+      <span>😢 <strong>Sad</strong> &nbsp;·&nbsp;</span>
+      <span>😌 <strong>Relaxed</strong> &nbsp;·&nbsp;</span>
+      <span>⚡ <strong>Energetic</strong> &nbsp;·&nbsp;</span>
+      <span>💕 <strong>Romantic</strong> &nbsp;·&nbsp;</span>
+      <span>🎯 <strong>Focus</strong> &nbsp;·&nbsp;</span>
+      <!-- Duplicated for infinite loop effect -->
+      <span>😊 <strong>Happy</strong> &nbsp;·&nbsp;</span>
+      <span>😢 <strong>Sad</strong> &nbsp;·&nbsp;</span>
+      <span>😌 <strong>Relaxed</strong> &nbsp;·&nbsp;</span>
+      <span>⚡ <strong>Energetic</strong> &nbsp;·&nbsp;</span>
+      <span>💕 <strong>Romantic</strong> &nbsp;·&nbsp;</span>
+      <span>🎯 <strong>Focus</strong> &nbsp;·&nbsp;</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <section class="wrap">
+    <div class="stats-row">
+      <div class="stat-card sc1"><div class="stat-n">6</div><div class="stat-l">Mood Categories</div></div>
+      <div class="stat-card sc2"><div class="stat-n">30+</div><div class="stat-l">Curated Songs</div></div>
+      <div class="stat-card sc3"><div class="stat-n">100%</div><div class="stat-l">Free Access</div></div>
+      <div class="stat-card sc4"><div class="stat-n">24/7</div><div class="stat-l">Available</div></div>
+      <div class="stat-card sc5"><div class="stat-n">10K+</div><div class="stat-l">Monthly Users</div></div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="wrap" style="padding-top:0">
+    <h2 class="sec-title">Why <span class="gc">MoodTunes?</span></h2>
+    <p class="sec-sub">Everything built around your emotions, not algorithms</p>
+    <div class="feat-grid">
+      <div class="feat-card"><span class="feat-icon">🎭</span><h3>Mood-Based Playlists</h3><p>Handpicked collections matched perfectly to your emotional state.</p></div>
+      <div class="feat-card"><span class="feat-icon">📊</span><h3>Live Charts</h3><p>See what moods are trending globally across all listeners.</p></div>
+      <div class="feat-card"><span class="feat-icon">❤️</span><h3>Favourites</h3><p>Heart songs instantly and build your personal collection.</p></div>
+      <div class="feat-card"><span class="feat-icon">🔍</span><h3>Smart Explore</h3><p>Filter by genre, energy or vibe to discover new tracks.</p></div>
+      <div class="feat-card"><span class="feat-icon">🧑‍💼</span><h3>Rich Profiles</h3><p>Track your full history and see which moods you visit most.</p></div>
+      <div class="feat-card"><span class="feat-icon">⚙️</span><h3>Full Settings</h3><p>Customise themes, audio quality, notifications and more.</p></div>
+    </div>
+  </section>
+
+  <!-- Mood Picker -->
+  <section class="wrap" style="padding-top:0">
+    <h2 class="sec-title">Choose Your <span class="gl">Mood</span></h2>
+    <p class="sec-sub">How are you feeling right now?</p>
+    <div class="mood-grid">
+      <button class="mood-card mc-happy"    onclick="go('happy')"><span class="mood-icon-big">😊</span><h3>Happy</h3><p>Uplifting &amp; joyful</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-sad"      onclick="go('sad')"><span class="mood-icon-big">😢</span><h3>Sad</h3><p>Emotional &amp; reflective</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-relaxed"  onclick="go('relaxed')"><span class="mood-icon-big">😌</span><h3>Relaxed</h3><p>Calm &amp; peaceful</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-energy"   onclick="go('energetic')"><span class="mood-icon-big">⚡</span><h3>Energetic</h3><p>High-energy beats</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-romantic" onclick="go('romantic')"><span class="mood-icon-big">💕</span><h3>Romantic</h3><p>Love &amp; passion</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-focus"    onclick="go('focus')"><span class="mood-icon-big">🎯</span><h3>Focus</h3><p>Deep concentration</p><span class="mood-pill">5 songs</span></button>
+    </div>
+  </section>
+</div><!-- end #page-home -->
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE: MOODS
+═══════════════════════════════════════════ -->
+<div id="page-moods" class="page">
+  <section class="wrap">
+    <h2 class="sec-title">All <span class="ga">Moods</span></h2>
+    <p class="sec-sub">Pick the one that speaks to you right now</p>
+    <!-- Search box — oninput calls filterMoods() in tunes.js -->
+    <div class="search-bar" style="max-width:430px">
+      <span class="si">🔍</span>
+      <input type="text" id="moodQ" placeholder="Search moods…" oninput="filterMoods(this.value)">
+    </div>
+    <!-- data-name used by filterMoods() in JS -->
+    <div class="mood-grid" id="moodGrid">
+      <button class="mood-card mc-happy"    onclick="go('happy')"    data-name="happy"><span class="mood-icon-big">😊</span><h3>Happy</h3><p>Uplifting &amp; joyful</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-sad"      onclick="go('sad')"      data-name="sad"><span class="mood-icon-big">😢</span><h3>Sad</h3><p>Emotional &amp; reflective</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-relaxed"  onclick="go('relaxed')"  data-name="relaxed"><span class="mood-icon-big">😌</span><h3>Relaxed</h3><p>Calm &amp; peaceful</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-energy"   onclick="go('energetic')"data-name="energetic"><span class="mood-icon-big">⚡</span><h3>Energetic</h3><p>High-energy beats</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-romantic" onclick="go('romantic')" data-name="romantic"><span class="mood-icon-big">💕</span><h3>Romantic</h3><p>Love &amp; passion</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-focus"    onclick="go('focus')"    data-name="focus"><span class="mood-icon-big">🎯</span><h3>Focus</h3><p>Deep concentration</p><span class="mood-pill">5 songs</span></button>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PLAYLIST PAGES
+     Each song row calls play() and fav() from tunes.js
+     onclick, event.stopPropagation() stops fav
+     click from also firing the row's play().
+═══════════════════════════════════════════ -->
+
+<!-- HAPPY -->
+<div id="page-happy" class="page">
+  <section class="pl-wrap">
+    <button class="back-btn" onclick="go('home')">← Back</button>
+    <div class="pl-header">
+      <div class="pl-cover" style="background:linear-gradient(145deg,#ff9a3c,#ff4d6d)">😊</div>
+      <div class="pl-meta"><h2>Happy Playlist</h2><p>Uplifting tunes to brighten your day</p><span class="pl-count">5 songs · 17 min</span></div>
+    </div>
+    <div class="song-list">
+      <div class="song-row" onclick="play('Sunshine Day','The Bright Band','😊','3:24')">
+        <div class="sn">1</div><div class="splay">▶</div>
+        <div class="sthumb" style="background:linear-gradient(135deg,#ff9a3c,#ff4d6d)">☀️</div>
+        <div class="sinfo"><div class="st">Sunshine Day</div><div class="sa">The Bright Band</div></div>
+        <span class="sgenre">Pop</span><div class="sdur">3:24</div>
+        <button class="fav-btn" onclick="event.stopPropagation();fav(this,'Sunshine Day','The Bright Band','☀️','3:24')">♡</button>
+      </div>
+      <div class="song-row" onclick="play('Good Vibes Only','Joy Collective','😊','2:58')">
+        <div class="sn">2</div><div class="splay">▶</div>
+        <div class="sthumb" style="background:linear-gradient(135deg,#ffbe0b,#ff6b2b)">🌈</div>
+        <div class="sinfo"><div class="st">Good Vibes Only</div><div class="sa">Joy Collective</div></div>
+        <span class="sgenre">Indie</span><div class="sdur">2:58</div>
+        <button class="fav-btn" onclick="event.stopPropagation();fav(this,'Good Vibes Only','Joy Collective','🌈','2:58')">♡</button>
+      </div>
+      <div class="song-row" onclick="play('Dancing in the Light','Glow Effect','😊','3:40')">
+        <div class="sn">3</div><div class="splay">▶</div>
+        <div class="sthumb" style="background:linear-gradient(135deg,#f72585,#b5179e)">💃</div>
+        <div class="sinfo"><div class="st">Dancing in the Light</div><div class="sa">Glow Effect</div></div>
+        <span class="sgenre">Dance</span><div class="sdur">3:40</div>
+        <button class="fav-btn" onclick="event.stopPropagation();fav(this,'Dancing in the Light','Glow Effect','💃','3:40')">♡</button>
+      </div>
+      <div class="song-row" onclick="play('Laugh Out Loud','Smile Squad','😊','3:12')">
+        <div class="sn">4</div><div class="splay">▶</div>
+        <div class="sthumb" style="background:linear-gradient(135deg,#06d6a0,#118ab2)">😄</div>
+        <div class="sinfo"><div class="st">Laugh Out Loud</div><div class="sa">Smile Squad</div></div>
+        <span class="sgenre">Pop</span><div class="sdur">3:12</div>
+        <button class="fav-btn" onclick="event.stopPropagation();fav(this,'Laugh Out Loud','Smile Squad','😄','3:12')">♡</button>
+      </div>
+      <div class="song-row" onclick="play('Golden Hour','Sunrise Sessions','😊','4:05')">
+        <div class="sn">5</div><div class="splay">▶</div>
+        <div class="sthumb" style="background:linear-gradient(135deg,#ffbe0b,#ff9a3c)">🌅</div>
+        <div class="sinfo"><div class="st">Golden Hour</div><div class="sa">Sunrise Sessions</div></div>
+        <span class="sgenre">Chill</span><div class="sdur">4:05</div>
+        <button class="fav-btn" onclick="event.stopPropagation();fav(this,'Golden Hour','Sunrise Sessions','🌅','4:05')">♡</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- SAD -->
+<div id="page-sad" class="page">
+  <section class="pl-wrap">
+    <button class="back-btn" onclick="go('home')">← Back</button>
+    <div class="pl-header">
+      <div class="pl-cover" style="background:linear-gradient(145deg,#00b4d8,#0077b6)">😢</div>
+      <div class="pl-meta"><h2>Sad Playlist</h2><p>Emotional music to feel understood</p><span class="pl-count">5 songs · 20 min</span></div>
+    </div>
+    <div class="song-list">
+      <div class="song-row" onclick="play('Rainy Window','The Melancholy','😢','4:10')"><div class="sn">1</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#00b4d8,#0077b6)">🌧️</div><div class="sinfo"><div class="st">Rainy Window</div><div class="sa">The Melancholy</div></div><span class="sgenre">Indie</span><div class="sdur">4:10</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Rainy Window','The Melancholy','🌧️','4:10')">♡</button></div>
+      <div class="song-row" onclick="play('Empty Room','Hollow Hearts','😢','3:55')"><div class="sn">2</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#3a0ca3,#4361ee)">🚪</div><div class="sinfo"><div class="st">Empty Room</div><div class="sa">Hollow Hearts</div></div><span class="sgenre">Soul</span><div class="sdur">3:55</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Empty Room','Hollow Hearts','🚪','3:55')">♡</button></div>
+      <div class="song-row" onclick="play('Fading Away','Blue Tide','😢','4:20')"><div class="sn">3</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#06d6a0,#118ab2)">🌊</div><div class="sinfo"><div class="st">Fading Away</div><div class="sa">Blue Tide</div></div><span class="sgenre">Ambient</span><div class="sdur">4:20</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Fading Away','Blue Tide','🌊','4:20')">♡</button></div>
+      <div class="song-row" onclick="play('Tears in the Dark','Night Echo','😢','3:48')"><div class="sn">4</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#7b2ff7,#3a0ca3)">😔</div><div class="sinfo"><div class="st">Tears in the Dark</div><div class="sa">Night Echo</div></div><span class="sgenre">R&amp;B</span><div class="sdur">3:48</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Tears in the Dark','Night Echo','😔','3:48')">♡</button></div>
+      <div class="song-row" onclick="play('Missing You','Lost Signal','😢','4:02')"><div class="sn">5</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#ff4d6d,#7b2ff7)">💔</div><div class="sinfo"><div class="st">Missing You</div><div class="sa">Lost Signal</div></div><span class="sgenre">Pop</span><div class="sdur">4:02</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Missing You','Lost Signal','💔','4:02')">♡</button></div>
+    </div>
+  </section>
+</div>
+
+<!-- RELAXED -->
+<div id="page-relaxed" class="page">
+  <section class="pl-wrap">
+    <button class="back-btn" onclick="go('home')">← Back</button>
+    <div class="pl-header">
+      <div class="pl-cover" style="background:linear-gradient(145deg,#06d6a0,#118ab2)">😌</div>
+      <div class="pl-meta"><h2>Relaxed Playlist</h2><p>Peaceful sounds to calm your mind</p><span class="pl-count">5 songs · 22 min</span></div>
+    </div>
+    <div class="song-list">
+      <div class="song-row" onclick="play('Ocean Breeze','Calm Collective','😌','4:30')"><div class="sn">1</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#06d6a0,#118ab2)">🌊</div><div class="sinfo"><div class="st">Ocean Breeze</div><div class="sa">Calm Collective</div></div><span class="sgenre">Chill</span><div class="sdur">4:30</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Ocean Breeze','Calm Collective','🌊','4:30')">♡</button></div>
+      <div class="song-row" onclick="play('Soft Morning','Dew Drops','😌','5:00')"><div class="sn">2</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#f72585,#7b2ff7)">🌸</div><div class="sinfo"><div class="st">Soft Morning</div><div class="sa">Dew Drops</div></div><span class="sgenre">Lo-fi</span><div class="sdur">5:00</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Soft Morning','Dew Drops','🌸','5:00')">♡</button></div>
+      <div class="song-row" onclick="play('Still Waters','The Drift','😌','4:15')"><div class="sn">3</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#00b4d8,#06d6a0)">🏞️</div><div class="sinfo"><div class="st">Still Waters</div><div class="sa">The Drift</div></div><span class="sgenre">Ambient</span><div class="sdur">4:15</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Still Waters','The Drift','🏞️','4:15')">♡</button></div>
+      <div class="song-row" onclick="play('Gentle Rain','Forest Notes','😌','4:50')"><div class="sn">4</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#06d6a0,#ffbe0b)">🌿</div><div class="sinfo"><div class="st">Gentle Rain</div><div class="sa">Forest Notes</div></div><span class="sgenre">Nature</span><div class="sdur">4:50</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Gentle Rain','Forest Notes','🌿','4:50')">♡</button></div>
+      <div class="song-row" onclick="play('Cloud Nine','Floatwave','😌','3:38')"><div class="sn">5</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#7b2ff7,#00b4d8)">☁️</div><div class="sinfo"><div class="st">Cloud Nine</div><div class="sa">Floatwave</div></div><span class="sgenre">Chill</span><div class="sdur">3:38</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Cloud Nine','Floatwave','☁️','3:38')">♡</button></div>
+    </div>
+  </section>
+</div>
+
+<!-- ENERGETIC -->
+<div id="page-energetic" class="page">
+  <section class="pl-wrap">
+    <button class="back-btn" onclick="go('home')">← Back</button>
+    <div class="pl-header">
+      <div class="pl-cover" style="background:linear-gradient(145deg,#ffbe0b,#fb5607)">⚡</div>
+      <div class="pl-meta"><h2>Energetic Playlist</h2><p>High-tempo beats to fuel your fire</p><span class="pl-count">5 songs · 17 min</span></div>
+    </div>
+    <div class="song-list">
+      <div class="song-row" onclick="play('Feel the Beat','Energy Crew','⚡','3:10')"><div class="sn">1</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#ffbe0b,#ff4d6d)">🔥</div><div class="sinfo"><div class="st">Feel the Beat</div><div class="sa">Energy Crew</div></div><span class="sgenre">EDM</span><div class="sdur">3:10</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Feel the Beat','Energy Crew','🔥','3:10')">♡</button></div>
+      <div class="song-row" onclick="play('Thunder Strike','Electric Storm','⚡','3:22')"><div class="sn">2</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#ff6b2b,#ffbe0b)">⚡</div><div class="sinfo"><div class="st">Thunder Strike</div><div class="sa">Electric Storm</div></div><span class="sgenre">Rock</span><div class="sdur">3:22</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Thunder Strike','Electric Storm','⚡','3:22')">♡</button></div>
+      <div class="song-row" onclick="play('Pump It Up','Workout Warriors','⚡','2:55')"><div class="sn">3</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#f72585,#ff6b2b)">💪</div><div class="sinfo"><div class="st">Pump It Up</div><div class="sa">Workout Warriors</div></div><span class="sgenre">Hip-Hop</span><div class="sdur">2:55</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Pump It Up','Workout Warriors','💪','2:55')">♡</button></div>
+      <div class="song-row" onclick="play('Power Mode','Bass Boosters','⚡','3:30')"><div class="sn">4</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#7b2ff7,#ff4d6d)">🎸</div><div class="sinfo"><div class="st">Power Mode</div><div class="sa">Bass Boosters</div></div><span class="sgenre">EDM</span><div class="sdur">3:30</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Power Mode','Bass Boosters','🎸','3:30')">♡</button></div>
+      <div class="song-row" onclick="play('Adrenaline Rush','Intensity Max','⚡','3:50')"><div class="sn">5</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#fb5607,#ffbe0b)">🏃</div><div class="sinfo"><div class="st">Adrenaline Rush</div><div class="sa">Intensity Max</div></div><span class="sgenre">Rock</span><div class="sdur">3:50</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Adrenaline Rush','Intensity Max','🏃','3:50')">♡</button></div>
+    </div>
+  </section>
+</div>
+
+<!-- ROMANTIC -->
+<div id="page-romantic" class="page">
+  <section class="pl-wrap">
+    <button class="back-btn" onclick="go('home')">← Back</button>
+    <div class="pl-header">
+      <div class="pl-cover" style="background:linear-gradient(145deg,#f72585,#b5179e)">💕</div>
+      <div class="pl-meta"><h2>Romantic Playlist</h2><p>Love songs for tender moments</p><span class="pl-count">5 songs · 21 min</span></div>
+    </div>
+    <div class="song-list">
+      <div class="song-row" onclick="play('Heart and Soul','Love Tunes','💕','4:15')"><div class="sn">1</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#f72585,#ff4d6d)">💗</div><div class="sinfo"><div class="st">Heart and Soul</div><div class="sa">Love Tunes</div></div><span class="sgenre">Soul</span><div class="sdur">4:15</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Heart and Soul','Love Tunes','💗','4:15')">♡</button></div>
+      <div class="song-row" onclick="play('Endless Love','Romance Band','💕','4:00')"><div class="sn">2</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#b5179e,#7b2ff7)">🌹</div><div class="sinfo"><div class="st">Endless Love</div><div class="sa">Romance Band</div></div><span class="sgenre">R&amp;B</span><div class="sdur">4:00</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Endless Love','Romance Band','🌹','4:00')">♡</button></div>
+      <div class="song-row" onclick="play('You and Me Forever','Sweet Harmony','💕','4:22')"><div class="sn">3</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#ff4d6d,#ffbe0b)">👫</div><div class="sinfo"><div class="st">You and Me Forever</div><div class="sa">Sweet Harmony</div></div><span class="sgenre">Pop</span><div class="sdur">4:22</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'You and Me Forever','Sweet Harmony','👫','4:22')">♡</button></div>
+      <div class="song-row" onclick="play('Moonlight Dance','Lovers Symphony','💕','4:05')"><div class="sn">4</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#3a0ca3,#f72585)">🌙</div><div class="sinfo"><div class="st">Moonlight Dance</div><div class="sa">Lovers Symphony</div></div><span class="sgenre">Classical</span><div class="sdur">4:05</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Moonlight Dance','Lovers Symphony','🌙','4:05')">♡</button></div>
+      <div class="song-row" onclick="play('Kiss in the Rain','Passionate Hearts','💕','4:18')"><div class="sn">5</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#f72585,#ff6b2b)">💋</div><div class="sinfo"><div class="st">Kiss in the Rain</div><div class="sa">Passionate Hearts</div></div><span class="sgenre">Pop</span><div class="sdur">4:18</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Kiss in the Rain','Passionate Hearts','💋','4:18')">♡</button></div>
+    </div>
+  </section>
+</div>
+
+<!-- FOCUS -->
+<div id="page-focus" class="page">
+  <section class="pl-wrap">
+    <button class="back-btn" onclick="go('home')">← Back</button>
+    <div class="pl-header">
+      <div class="pl-cover" style="background:linear-gradient(145deg,#7b2ff7,#3a0ca3)">🎯</div>
+      <div class="pl-meta"><h2>Focus Playlist</h2><p>Deep work music for the zone</p><span class="pl-count">5 songs · 24 min</span></div>
+    </div>
+    <div class="song-list">
+      <div class="song-row" onclick="play('Deep Concentration','Study Beats','🎯','4:45')"><div class="sn">1</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#7b2ff7,#3a0ca3)">🧠</div><div class="sinfo"><div class="st">Deep Concentration</div><div class="sa">Study Beats</div></div><span class="sgenre">Ambient</span><div class="sdur">4:45</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Deep Concentration','Study Beats','🧠','4:45')">♡</button></div>
+      <div class="song-row" onclick="play('Flow State','Productivity Pro','🎯','5:10')"><div class="sn">2</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#3a0ca3,#00b4d8)">📖</div><div class="sinfo"><div class="st">Flow State</div><div class="sa">Productivity Pro</div></div><span class="sgenre">Lo-fi</span><div class="sdur">5:10</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Flow State','Productivity Pro','📖','5:10')">♡</button></div>
+      <div class="song-row" onclick="play('Brain Power','Mind Matrix','🎯','4:55')"><div class="sn">3</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#7b2ff7,#06d6a0)">⚙️</div><div class="sinfo"><div class="st">Brain Power</div><div class="sa">Mind Matrix</div></div><span class="sgenre">Electronic</span><div class="sdur">4:55</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Brain Power','Mind Matrix','⚙️','4:55')">♡</button></div>
+      <div class="song-row" onclick="play('Work Mode Active','Focus Factory','🎯','4:30')"><div class="sn">4</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#4361ee,#7b2ff7)">💻</div><div class="sinfo"><div class="st">Work Mode Active</div><div class="sa">Focus Factory</div></div><span class="sgenre">Ambient</span><div class="sdur">4:30</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Work Mode Active','Focus Factory','💻','4:30')">♡</button></div>
+      <div class="song-row" onclick="play('Zone In','Attention Span','🎯','4:40')"><div class="sn">5</div><div class="splay">▶</div><div class="sthumb" style="background:linear-gradient(135deg,#7b2ff7,#f72585)">🎯</div><div class="sinfo"><div class="st">Zone In</div><div class="sa">Attention Span</div></div><span class="sgenre">Lo-fi</span><div class="sdur">4:40</div><button class="fav-btn" onclick="event.stopPropagation();fav(this,'Zone In','Attention Span','🎯','4:40')">♡</button></div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE: EXPLORE
+     data-g = genre filter value
+     data-n = searchable text (song + artist)
+═══════════════════════════════════════════ -->
+<div id="page-explore" class="page">
+  <section class="wrap">
+    <h2 class="sec-title">Explore <span class="gl">Music</span></h2>
+    <p class="sec-sub">Search by song, artist, or filter by genre</p>
+    <div class="search-bar">
+      <span class="si">🔍</span>
+      <input type="text" id="exQ" placeholder="Search songs, artists…" oninput="filterExplore(this.value)">
+    </div>
+    <div class="filter-row">
+      <button class="filter-btn on" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn"    onclick="setFilter('pop',this)">Pop</button>
+      <button class="filter-btn"    onclick="setFilter('lofi',this)">Lo-fi</button>
+      <button class="filter-btn"    onclick="setFilter('edm',this)">EDM</button>
+      <button class="filter-btn"    onclick="setFilter('indie',this)">Indie</button>
+      <button class="filter-btn"    onclick="setFilter('ambient',this)">Ambient</button>
+      <button class="filter-btn"    onclick="setFilter('rb',this)">R&amp;B</button>
+    </div>
+    <div class="explore-grid" id="exGrid">
+      <div class="explore-card" data-g="pop"     data-n="sunshine day the bright band"   onclick="play('Sunshine Day','The Bright Band','😊','3:24')"><div class="ex-cover" style="background:linear-gradient(145deg,#ff9a3c,#ff4d6d)">☀️</div><div class="ex-body"><h4>Sunshine Day</h4><p>The Bright Band</p><span class="ex-tag">Pop</span></div></div>
+      <div class="explore-card" data-g="lofi"    data-n="flow state productivity pro"    onclick="play('Flow State','Productivity Pro','📖','5:10')"><div class="ex-cover" style="background:linear-gradient(145deg,#7b2ff7,#3a0ca3)">📖</div><div class="ex-body"><h4>Flow State</h4><p>Productivity Pro</p><span class="ex-tag">Lo-fi</span></div></div>
+      <div class="explore-card" data-g="edm"     data-n="feel the beat energy crew"      onclick="play('Feel the Beat','Energy Crew','⚡','3:10')"><div class="ex-cover" style="background:linear-gradient(145deg,#ffbe0b,#fb5607)">🔥</div><div class="ex-body"><h4>Feel the Beat</h4><p>Energy Crew</p><span class="ex-tag">EDM</span></div></div>
+      <div class="explore-card" data-g="indie"   data-n="rainy window the melancholy"    onclick="play('Rainy Window','The Melancholy','🌧️','4:10')"><div class="ex-cover" style="background:linear-gradient(145deg,#00b4d8,#0077b6)">🌧️</div><div class="ex-body"><h4>Rainy Window</h4><p>The Melancholy</p><span class="ex-tag">Indie</span></div></div>
+      <div class="explore-card" data-g="ambient" data-n="ocean breeze calm collective"   onclick="play('Ocean Breeze','Calm Collective','🌊','4:30')"><div class="ex-cover" style="background:linear-gradient(145deg,#06d6a0,#118ab2)">🌊</div><div class="ex-body"><h4>Ocean Breeze</h4><p>Calm Collective</p><span class="ex-tag">Ambient</span></div></div>
+      <div class="explore-card" data-g="rb"      data-n="heart and soul love tunes"     onclick="play('Heart and Soul','Love Tunes','💗','4:15')"><div class="ex-cover" style="background:linear-gradient(145deg,#f72585,#b5179e)">💗</div><div class="ex-body"><h4>Heart and Soul</h4><p>Love Tunes</p><span class="ex-tag">R&amp;B</span></div></div>
+      <div class="explore-card" data-g="lofi"    data-n="soft morning dew drops"         onclick="play('Soft Morning','Dew Drops','🌸','5:00')"><div class="ex-cover" style="background:linear-gradient(145deg,#b5179e,#7b2ff7)">🌸</div><div class="ex-body"><h4>Soft Morning</h4><p>Dew Drops</p><span class="ex-tag">Lo-fi</span></div></div>
+      <div class="explore-card" data-g="pop"     data-n="golden hour sunrise sessions"   onclick="play('Golden Hour','Sunrise Sessions','🌅','4:05')"><div class="ex-cover" style="background:linear-gradient(145deg,#ffbe0b,#ff9a3c)">🌅</div><div class="ex-body"><h4>Golden Hour</h4><p>Sunrise Sessions</p><span class="ex-tag">Pop</span></div></div>
+      <div class="explore-card" data-g="ambient" data-n="brain power mind matrix"        onclick="play('Brain Power','Mind Matrix','⚙️','4:55')"><div class="ex-cover" style="background:linear-gradient(145deg,#7b2ff7,#06d6a0)">⚙️</div><div class="ex-body"><h4>Brain Power</h4><p>Mind Matrix</p><span class="ex-tag">Ambient</span></div></div>
+      <div class="explore-card" data-g="edm"     data-n="thunder strike electric storm"  onclick="play('Thunder Strike','Electric Storm','⚡','3:22')"><div class="ex-cover" style="background:linear-gradient(145deg,#ff6b2b,#ffbe0b)">⚡</div><div class="ex-body"><h4>Thunder Strike</h4><p>Electric Storm</p><span class="ex-tag">EDM</span></div></div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE: CHARTS
+═══════════════════════════════════════════ -->
+<div id="page-charts" class="page">
+  <section class="wrap">
+    <h2 class="sec-title">🔥 Trending <span class="gc">Charts</span></h2>
+    <p class="sec-sub">Most played tracks across all moods this week</p>
+    <div class="charts-layout">
+      <div class="chart-box">
+        <div class="chart-hdr">Top 10 Songs This Week</div>
+        <div class="chart-row" onclick="play('Golden Hour','Sunrise Sessions','🌅','4:05')"><div class="c-rank gold">1</div><div class="c-thumb" style="background:linear-gradient(135deg,#ffbe0b,#ff9a3c)">🌅</div><div class="c-info"><div class="ct">Golden Hour</div><div class="ca">Sunrise Sessions</div></div><div class="c-plays">12.4K</div><div class="tu">▲2</div></div>
+        <div class="chart-row" onclick="play('Ocean Breeze','Calm Collective','🌊','4:30')"><div class="c-rank silver">2</div><div class="c-thumb" style="background:linear-gradient(135deg,#06d6a0,#118ab2)">🌊</div><div class="c-info"><div class="ct">Ocean Breeze</div><div class="ca">Calm Collective</div></div><div class="c-plays">10.1K</div><div class="tu">▲5</div></div>
+        <div class="chart-row" onclick="play('Feel the Beat','Energy Crew','🔥','3:10')"><div class="c-rank bronze">3</div><div class="c-thumb" style="background:linear-gradient(135deg,#ffbe0b,#fb5607)">🔥</div><div class="c-info"><div class="ct">Feel the Beat</div><div class="ca">Energy Crew</div></div><div class="c-plays">9.8K</div><div class="td">▼1</div></div>
+        <div class="chart-row" onclick="play('Flow State','Productivity Pro','📖','5:10')"><div class="c-rank">4</div><div class="c-thumb" style="background:linear-gradient(135deg,#7b2ff7,#3a0ca3)">📖</div><div class="c-info"><div class="ct">Flow State</div><div class="ca">Productivity Pro</div></div><div class="c-plays">8.7K</div><div class="tu">▲3</div></div>
+        <div class="chart-row" onclick="play('Sunshine Day','The Bright Band','☀️','3:24')"><div class="c-rank">5</div><div class="c-thumb" style="background:linear-gradient(135deg,#ff9a3c,#ff4d6d)">☀️</div><div class="c-info"><div class="ct">Sunshine Day</div><div class="ca">The Bright Band</div></div><div class="c-plays">7.5K</div><div class="td">▼2</div></div>
+        <div class="chart-row" onclick="play('Heart and Soul','Love Tunes','💗','4:15')"><div class="c-rank">6</div><div class="c-thumb" style="background:linear-gradient(135deg,#f72585,#b5179e)">💗</div><div class="c-info"><div class="ct">Heart and Soul</div><div class="ca">Love Tunes</div></div><div class="c-plays">6.9K</div><div class="tu">🆕</div></div>
+        <div class="chart-row" onclick="play('Thunder Strike','Electric Storm','⚡','3:22')"><div class="c-rank">7</div><div class="c-thumb" style="background:linear-gradient(135deg,#ff6b2b,#ffbe0b)">⚡</div><div class="c-info"><div class="ct">Thunder Strike</div><div class="ca">Electric Storm</div></div><div class="c-plays">6.2K</div><div class="td">▼3</div></div>
+        <div class="chart-row" onclick="play('Soft Morning','Dew Drops','🌸','5:00')"><div class="c-rank">8</div><div class="c-thumb" style="background:linear-gradient(135deg,#b5179e,#7b2ff7)">🌸</div><div class="c-info"><div class="ct">Soft Morning</div><div class="ca">Dew Drops</div></div><div class="c-plays">5.8K</div><div class="tu">▲1</div></div>
+        <div class="chart-row" onclick="play('Moonlight Dance','Lovers Symphony','🌙','4:05')"><div class="c-rank">9</div><div class="c-thumb" style="background:linear-gradient(135deg,#3a0ca3,#f72585)">🌙</div><div class="c-info"><div class="ct">Moonlight Dance</div><div class="ca">Lovers Symphony</div></div><div class="c-plays">5.1K</div><div class="tn">—</div></div>
+        <div class="chart-row" onclick="play('Brain Power','Mind Matrix','⚙️','4:55')"><div class="c-rank">10</div><div class="c-thumb" style="background:linear-gradient(135deg,#7b2ff7,#06d6a0)">⚙️</div><div class="c-info"><div class="ct">Brain Power</div><div class="ca">Mind Matrix</div></div><div class="c-plays">4.8K</div><div class="tu">▲4</div></div>
+      </div>
+      <div class="sidebar">
+        <div class="s-card">
+          <h3>🎭 Mood Popularity</h3>
+          <div class="bar-row"><span class="bar-lbl">Happy</span><div class="bar-track"><div class="bar-fill bf1" style="width:88%"></div></div><span class="bar-pct">88%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Relaxed</span><div class="bar-track"><div class="bar-fill bf2" style="width:75%"></div></div><span class="bar-pct">75%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Focus</span><div class="bar-track"><div class="bar-fill bf3" style="width:66%"></div></div><span class="bar-pct">66%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Energetic</span><div class="bar-track"><div class="bar-fill bf1" style="width:58%"></div></div><span class="bar-pct">58%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Romantic</span><div class="bar-track"><div class="bar-fill bf3" style="width:44%"></div></div><span class="bar-pct">44%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Sad</span><div class="bar-track"><div class="bar-fill bf2" style="width:38%"></div></div><span class="bar-pct">38%</span></div>
+        </div>
+        <div class="s-card">
+          <h3>🎵 Top Genres</h3>
+          <div class="bar-row"><span class="bar-lbl">Pop</span><div class="bar-track"><div class="bar-fill bf1" style="width:80%"></div></div></div>
+          <div class="bar-row"><span class="bar-lbl">Lo-fi</span><div class="bar-track"><div class="bar-fill bf2" style="width:70%"></div></div></div>
+          <div class="bar-row"><span class="bar-lbl">Ambient</span><div class="bar-track"><div class="bar-fill bf3" style="width:55%"></div></div></div>
+          <div class="bar-row"><span class="bar-lbl">EDM</span><div class="bar-track"><div class="bar-fill bf1" style="width:50%"></div></div></div>
+          <div class="bar-row"><span class="bar-lbl">Indie</span><div class="bar-track"><div class="bar-fill bf2" style="width:42%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE: PROFILE
+═══════════════════════════════════════════ -->
+<div id="page-profile" class="page">
+  <div class="profile-hero">
+    <div class="p-inner">
+      <div class="avatar">🎧<div class="av-badge">✓</div></div>
+      <div>
+        <div class="p-name"><h2>Aryan Sharma</h2><p>aryan@example.com · Member since Jan 2024</p></div>
+        <div class="p-stats">
+          <div class="ps"><div class="ps-n">142</div><div class="ps-l">Songs Played</div></div>
+          <div class="ps"><div class="ps-n">18</div><div class="ps-l">Favourites</div></div>
+          <div class="ps"><div class="ps-n">6</div><div class="ps-l">Moods Explored</div></div>
+        </div>
+      </div>
+      <div style="margin-left:auto"><button class="btn btn-ghost" onclick="toast('✏️ Edit profile — needs backend!')">Edit Profile</button></div>
+    </div>
+  </div>
+  <section class="wrap">
+    <div class="profile-grid">
+      <div class="p-sec">
+        <h3>🕒 Recent History</h3>
+        <div class="h-item"><div class="h-icon" style="background:linear-gradient(135deg,#ffbe0b,#ff9a3c)">☀️</div><div><div class="h-t">Sunshine Day</div><div class="h-a">The Bright Band · 2 hrs ago</div></div><button class="fav-btn" onclick="fav(this,'Sunshine Day','The Bright Band','☀️','3:24')">♡</button></div>
+        <div class="h-item"><div class="h-icon" style="background:linear-gradient(135deg,#06d6a0,#118ab2)">🌊</div><div><div class="h-t">Ocean Breeze</div><div class="h-a">Calm Collective · 5 hrs ago</div></div><button class="fav-btn" onclick="fav(this,'Ocean Breeze','Calm Collective','🌊','4:30')">♡</button></div>
+        <div class="h-item"><div class="h-icon" style="background:linear-gradient(135deg,#ffbe0b,#fb5607)">🔥</div><div><div class="h-t">Feel the Beat</div><div class="h-a">Energy Crew · Yesterday</div></div><button class="fav-btn" onclick="fav(this,'Feel the Beat','Energy Crew','🔥','3:10')">♡</button></div>
+        <div class="h-item"><div class="h-icon" style="background:linear-gradient(135deg,#7b2ff7,#3a0ca3)">📖</div><div><div class="h-t">Flow State</div><div class="h-a">Productivity Pro · Yesterday</div></div><button class="fav-btn" onclick="fav(this,'Flow State','Productivity Pro','📖','5:10')">♡</button></div>
+        <div class="h-item"><div class="h-icon" style="background:linear-gradient(135deg,#b5179e,#7b2ff7)">🌸</div><div><div class="h-t">Soft Morning</div><div class="h-a">Dew Drops · 2 days ago</div></div><button class="fav-btn" onclick="fav(this,'Soft Morning','Dew Drops','🌸','5:00')">♡</button></div>
+      </div>
+      <div class="p-sec">
+        <h3>🎭 Mood History</h3>
+        <p style="color:var(--muted);font-size:.83rem;margin-bottom:1.1rem">This month's moods</p>
+        <div>
+          <span class="mood-badge" style="background:rgba(255,154,60,.25);border:1px solid rgba(255,154,60,.5);color:#ffb87a">😊 Happy ×32</span>
+          <span class="mood-badge" style="background:rgba(123,47,247,.25);border:1px solid rgba(123,47,247,.5);color:#c4a6ff">🎯 Focus ×28</span>
+          <span class="mood-badge" style="background:rgba(6,214,160,.22);border:1px solid rgba(6,214,160,.5);color:#6effd8">😌 Relaxed ×21</span>
+          <span class="mood-badge" style="background:rgba(255,190,11,.22);border:1px solid rgba(255,190,11,.5);color:#ffe066">⚡ Energy ×18</span>
+          <span class="mood-badge" style="background:rgba(247,37,133,.2);border:1px solid rgba(247,37,133,.5);color:#ff87c0">💕 Romantic ×14</span>
+          <span class="mood-badge" style="background:rgba(0,180,216,.2);border:1px solid rgba(0,180,216,.5);color:#80d4f0">😢 Sad ×11</span>
+        </div>
+        <div style="margin-top:1.4rem;background:rgba(255,154,60,.15);border:1px solid rgba(255,154,60,.38);border-radius:14px;padding:1rem;display:flex;align-items:center;gap:.85rem">
+          <span style="font-size:2rem">😊</span>
+          <div><div style="font-weight:700;font-size:.95rem">Happy</div><div style="font-size:.76rem;color:var(--muted);margin-top:.1rem">32 sessions · 1h 48m total</div></div>
+          <span style="margin-left:auto;font-size:.76rem;color:var(--amber);font-weight:700">🏆 Top Mood</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE: FAVOURITES
+     .song-row items added dynamically by tunes.js
+═══════════════════════════════════════════ -->
+<div id="page-favourites" class="page">
+  <section class="wrap">
+    <h2 class="sec-title">❤️ Your <span class="gc">Favourites</span></h2>
+    <p class="sec-sub">Songs you've hearted across all moods</p>
+    <div class="song-list" id="favList">
+      <!-- Empty state — hidden by JS when songs exist -->
+      <div class="fav-empty" id="favEmpty">
+        <div class="ei">🤍</div>
+        <h3>No favourites yet</h3>
+        <p>Heart any song while listening and it'll appear here.</p>
+        <button class="btn btn-main" style="margin-top:1.5rem" onclick="go('moods')">Browse Moods</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE: SETTINGS
+     switchS() in tunes.js shows one panel,
+     hides the rest by toggling display.
+═══════════════════════════════════════════ -->
+<div id="page-settings" class="page">
+  <section class="wrap">
+    <h2 class="sec-title">⚙️ <span class="gv">Settings</span></h2>
+    <p class="sec-sub">Customise your MoodTunes experience</p>
+    <div class="settings-layout">
+      <!-- Side nav -->
+      <div class="s-nav">
+        <div class="s-nav-item on" onclick="switchS('account',this)">👤 Account</div>
+        <div class="s-nav-item"    onclick="switchS('appear',this)">🎨 Appearance</div>
+        <div class="s-nav-item"    onclick="switchS('audio',this)">🔊 Audio</div>
+        <div class="s-nav-item"    onclick="switchS('notifs',this)">🔔 Notifications</div>
+        <div class="s-nav-item"    onclick="switchS('privacy',this)">🔒 Privacy</div>
+      </div>
+      <!-- Panels — only one visible at a time -->
+      <div>
+        <!-- Account panel (shown by default) -->
+        <div class="s-panel" id="sp-account">
+          <h3>Account</h3><p class="sp-sub">Manage your profile details</p>
+          <div class="fg"><label>Display Name</label><input type="text" value="Aryan Sharma"></div>
+          <div class="fg"><label>Email</label><input type="email" value="aryan@example.com"></div>
+          <div class="fg"><label>Bio</label><textarea rows="3">Music lover &amp; coder 🎵</textarea></div>
+          <div class="fg"><label>Favourite Genre</label>
+            <select><option>Pop</option><option>Lo-fi</option><option>EDM</option><option>Indie</option><option>Ambient</option><option>R&amp;B</option></select>
+          </div>
+          <button class="auth-btn" onclick="toast('✅ Profile saved!')">Save Changes</button>
+        </div>
+        <!-- Appearance panel -->
+        <div class="s-panel" id="sp-appear" style="display:none">
+          <h3>Appearance</h3><p class="sp-sub">Personalise how MoodTunes looks</p>
+          <div class="s-row"><div class="s-lbl"><h4>Dark Mode</h4><p>Use the dark colour scheme</p></div><label class="tog"><input type="checkbox" checked onchange="toast('🌙 Theme toggled!')"><span class="tog-t"></span></label></div>
+          <div class="s-row">
+            <div class="s-lbl"><h4>Accent Colour</h4><p>Pick your highlight colour</p></div>
+            <!-- setAccent() in tunes.js updates --violet CSS variable live -->
+            <div class="theme-opts">
+              <div class="theme-opt on"  style="background:linear-gradient(135deg,#7b2ff7,#f72585)" onclick="setAccent('#7b2ff7',this)"></div>
+              <div class="theme-opt"     style="background:linear-gradient(135deg,#ff4d6d,#ff9a3c)" onclick="setAccent('#ff4d6d',this)"></div>
+              <div class="theme-opt"     style="background:linear-gradient(135deg,#06d6a0,#00b4d8)" onclick="setAccent('#06d6a0',this)"></div>
+              <div class="theme-opt"     style="background:linear-gradient(135deg,#ffbe0b,#fb5607)" onclick="setAccent('#ffbe0b',this)"></div>
+            </div>
+          </div>
+          <div class="s-row"><div class="s-lbl"><h4>Compact Mode</h4><p>Smaller song rows</p></div><label class="tog"><input type="checkbox" onchange="toast('📐 Compact mode toggled!')"><span class="tog-t"></span></label></div>
+          <div class="s-row"><div class="s-lbl"><h4>Animated Blobs</h4><p>Background animations</p></div><label class="tog"><input type="checkbox" checked onchange="toast('✨ Animations toggled!')"><span class="tog-t"></span></label></div>
+        </div>
+        <!-- Audio panel -->
+        <div class="s-panel" id="sp-audio" style="display:none">
+          <h3>Audio</h3><p class="sp-sub">Playback and quality settings</p>
+          <div class="s-row"><div class="s-lbl"><h4>Audio Quality</h4><p>Higher = more data usage</p></div><select style="background:rgba(255,255,255,.07);border:1px solid var(--bdr);border-radius:8px;padding:.48rem .85rem;color:var(--text);font-family:'Outfit',sans-serif" onchange="toast('🔊 Quality: '+this.value)"><option>Standard (128kbps)</option><option>High (256kbps)</option><option>Lossless</option></select></div>
+          <div class="s-row"><div class="s-lbl"><h4>Crossfade</h4><p>Smooth transition between songs</p></div><label class="tog"><input type="checkbox" onchange="toast('🎚️ Crossfade toggled!')"><span class="tog-t"></span></label></div>
+          <div class="s-row"><div class="s-lbl"><h4>Auto-play Next</h4><p>Keep the queue going</p></div><label class="tog"><input type="checkbox" checked onchange="toast('▶️ Auto-play toggled!')"><span class="tog-t"></span></label></div>
+          <div class="s-row"><div class="s-lbl"><h4>Equaliser</h4><p>Boost bass, treble or vocals</p></div><label class="tog"><input type="checkbox" onchange="toast('🎛️ EQ toggled!')"><span class="tog-t"></span></label></div>
+        </div>
+        <!-- Notifications panel -->
+        <div class="s-panel" id="sp-notifs" style="display:none">
+          <h3>Notifications</h3><p class="sp-sub">Choose what you get notified about</p>
+          <div class="s-row"><div class="s-lbl"><h4>New Playlists</h4><p>When a new mood drops</p></div><label class="tog"><input type="checkbox" checked onchange="toast('🔔 Toggled!')"><span class="tog-t"></span></label></div>
+          <div class="s-row"><div class="s-lbl"><h4>Trending Songs</h4><p>Weekly chart updates</p></div><label class="tog"><input type="checkbox" onchange="toast('📊 Toggled!')"><span class="tog-t"></span></label></div>
+          <div class="s-row"><div class="s-lbl"><h4>Email Digest</h4><p>Monthly listening recap</p></div><label class="tog"><input type="checkbox" checked onchange="toast('📧 Toggled!')"><span class="tog-t"></span></label></div>
+        </div>
+        <!-- Privacy panel -->
+        <div class="s-panel" id="sp-privacy" style="display:none">
+          <h3>Privacy</h3><p class="sp-sub">Control your data and visibility</p>
+          <div class="s-row"><div class="s-lbl"><h4>Public Profile</h4><p>Others can see your mood history</p></div><label class="tog"><input type="checkbox" onchange="toast('👁️ Toggled!')"><span class="tog-t"></span></label></div>
+          <div class="s-row"><div class="s-lbl"><h4>Share Activity</h4><p>Appear in trending charts</p></div><label class="tog"><input type="checkbox" checked onchange="toast('📡 Toggled!')"><span class="tog-t"></span></label></div>
+          <div class="s-row"><div class="s-lbl"><h4>Delete Account</h4><p>Permanently remove all data</p></div><button class="btn" style="background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.4);color:var(--coral);padding:.44rem 1rem;font-size:.81rem;border-radius:8px" onclick="toast('⚠️ Requires backend confirmation')">Delete</button></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     AUTH PAGES
+═══════════════════════════════════════════ -->
+<div id="page-login" class="page">
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <h2>Welcome Back 👋</h2>
+      <p class="auth-sub">Sign in to continue to MoodTunes</p>
+      <div class="s-btns">
+        <button class="s-btn" onclick="toast('🔵 Google OAuth — needs backend')">🌐 Google</button>
+        <button class="s-btn" onclick="toast('🍎 Apple Sign-In — needs backend')">🍎 Apple</button>
+      </div>
+      <div class="divider"><span>or with email</span></div>
+      <div class="fg"><label>Email</label><input type="email" placeholder="you@example.com"></div>
+      <div class="fg"><label>Password</label><input type="password" placeholder="••••••••"></div>
+      <button class="auth-btn" onclick="toast('✅ Connect to backend to enable login!')">Login</button>
+      <div class="auth-foot">No account? <a onclick="go('signup')">Sign up free</a> &nbsp;·&nbsp; <a onclick="toast('🔑 Password reset needs backend!')">Forgot?</a></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-signup" class="page">
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <h2>Join MoodTunes 🎵</h2>
+      <p class="auth-sub">Create your free account today</p>
+      <div class="s-btns">
+        <button class="s-btn" onclick="toast('🔵 Google OAuth — needs backend')">🌐 Google</button>
+        <button class="s-btn" onclick="toast('🍎 Apple Sign-In — needs backend')">🍎 Apple</button>
+      </div>
+      <div class="divider"><span>or with email</span></div>
+      <div class="fg"><label>Full Name</label><input type="text" placeholder="Your name"></div>
+      <div class="fg"><label>Email</label><input type="email" placeholder="you@example.com"></div>
+      <div class="fg"><label>Password</label><input type="password" placeholder="Min 8 characters"></div>
+      <div class="fg"><label>Confirm Password</label><input type="password" placeholder="Repeat password"></div>
+      <button class="auth-btn" onclick="toast('🎉 Connect to backend to enable signup!')">Create Account</button>
+      <div class="auth-foot">Already a member? <a onclick="go('login')">Log in</a></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     NOW PLAYING BAR (always present in DOM)
+     tunes.js adds .show to slide it up
+═══════════════════════════════════════════ -->
+<div class="npbar" id="npbar">
+  <div class="np-disc" id="npDisc">🎵</div>
+  <div class="np-info">
+    <div class="np-t" id="npTitle">—</div>
+    <div class="np-a" id="npArtist">—</div>
+  </div>
+  <div class="np-prog">
+    <!-- seekBar() reads click position to jump playback -->
+    <div class="np-bar" onclick="seekBar(event,this)">
+      <div class="np-fill" id="npFill"></div>
+    </div>
+    <div class="np-times">
+      <span id="npElapsed">0:00</span>
+      <span id="npTotal">0:00</span>
+    </div>
+  </div>
+  <div class="np-ctrls">
+    <button class="np-btn" onclick="prevTrack()">⏮</button>
+    <button class="np-btn np-pbtn" id="npBtn" onclick="togglePlay()">⏸</button>
+    <button class="np-btn" onclick="nextTrack()">⏭</button>
+  </div>
+  <div class="np-vol">
+    <span style="font-size:.88rem">🔊</span>
+    <input type="range" min="0" max="100" value="80" oninput="toast('🔊 Volume: '+this.value+'%')">
+  </div>
+  <button class="np-close np-btn" onclick="closePlayer()">✕</button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">🎵 MoodTunes</div>
+      <p>Handpicked music for every emotion. Always free.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul>
+        <li><a onclick="go('home')">Home</a></li>
+        <li><a onclick="go('explore')">Explore</a></li>
+        <li><a onclick="go('charts')">Charts</a></li>
+        <li><a onclick="go('moods')">Moods</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Account</h4>
+      <ul>
+        <li><a onclick="go('profile')">Profile</a></li>
+        <li><a onclick="go('favourites')">Favourites</a></li>
+        <li><a onclick="go('settings')">Settings</a></li>
+        <li><a onclick="go('login')">Login</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>More</h4>
+      <ul>
+        <li><a onclick="toast('📧 Contact coming soon!')">Contact</a></li>
+        <li><a onclick="toast('📄 Privacy Policy — backend feature')">Privacy</a></li>
+        <li><a onclick="toast('📋 Terms — backend feature')">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 MoodTunes. Built with ❤️ using HTML, CSS &amp; JS.</p>
+    <div class="soc-row">
+      <div class="soc-btn" onclick="toast('𝕏 Twitter/X coming soon!')">𝕏</div>
+      <div class="soc-btn" onclick="toast('📸 Instagram coming soon!')">📷</div>
+      <div class="soc-btn" onclick="toast('🎵 TikTok coming soon!')">♪</div>
+    </div>
+  </div>
+</footer>
+
+<!-- External JS file — loaded LAST so all HTML elements exist when JS runs -->
+<script src="tunes.js"></script>
+
+</body>
+</html>
