@@ -70,7 +70,11 @@ function go(name) {
 }
 
 /* Boot: show home page as soon as HTML is ready */
-document.addEventListener('DOMContentLoaded', () => go('home'));
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => go('home'));
+} else {
+  go('home');
+}
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
