@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   tunes.js — Clean External Streaming v8
+   tunes.js — Clean External Streaming v9
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
@@ -9,14 +9,14 @@
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    0. SONGS DATABASE
    18 tracks — 3 per mood — using high-speed
-   CORS-enabled direct streaming URLs from GitHub.
+   CORS-enabled direct streaming URLs from jsDelivr.
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const L1 = "https://raw.githubusercontent.com/rafaelreis-hotmart/Audio-Sample-files/master/sample.mp3";
-const L2 = "https://raw.githubusercontent.com/goldfire/howler.js/master/examples/player/audio/80s_vibe.mp3";
-const L3 = "https://raw.githubusercontent.com/hanifwidi17/libermod/main/music.mp3";
-const L4 = "https://raw.githubusercontent.com/rafaelreis-hotmart/Audio-Sample-files/master/sample2.mp3";
-const L5 = "https://raw.githubusercontent.com/goldfire/howler.js/master/examples/player/audio/rave_digger.mp3";
-const L6 = "https://raw.githubusercontent.com/goldfire/howler.js/master/examples/player/audio/running_out.mp3";
+const L1 = "https://cdn.jsdelivr.net/gh/rafaelreis-hotmart/Audio-Sample-files@master/sample.mp3";
+const L2 = "https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/80s_vibe.mp3";
+const L3 = "https://cdn.jsdelivr.net/gh/hanifwidi17/libermod@main/music.mp3";
+const L4 = "https://cdn.jsdelivr.net/gh/rafaelreis-hotmart/Audio-Sample-files@master/sample2.mp3";
+const L5 = "https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/rave_digger.mp3";
+const L6 = "https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/running_out.mp3";
 
 const MOOD_META = {
   happy:     { emoji: '😊', label: 'Happy',     grad: 'linear-gradient(145deg,#ff9a3c,#ff4d6d)', desc: 'Uplifting tunes to brighten your day',        badgeBg: 'rgba(255,154,60,.25)',  badgeBdr: 'rgba(255,154,60,.5)',  badgeText: '#ffb87a' },
