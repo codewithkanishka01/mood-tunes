@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   tunes.js — Spotify Redesign Logic v4
+   tunes.js — Spotify Redesign Logic v5
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
@@ -42,7 +42,7 @@ const MOOD_META = {
 };
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   PER-SONG SIGNATURE TUNE ENGINE
+   SYNTHESIZER FALLBACK MELODY ENGINE
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const SCALE_MAJOR      = [0, 2, 4, 5, 7, 9, 11, 12];
 const SCALE_MINOR      = [0, 2, 3, 5, 7, 8, 10, 12];
@@ -188,7 +188,6 @@ function go(name) {
     if (prev) prev.classList.remove('active', 'page-enter');
   }
 
-  // Scroll main content pane to top
   document.querySelector('.content-viewport')?.scrollTo(0, 0);
 
   const next = document.getElementById('page-' + name);
@@ -217,7 +216,6 @@ function go(name) {
 
   currentPage = name;
 
-  /* Highlight correct nav button in sidebar + mobile navigation */
   document.querySelectorAll('.sidebar-links button, .mobile-nav button').forEach(b => b.classList.remove('nav-active'));
   const sb = document.getElementById('sb-' + name);
   if (sb) sb.classList.add('nav-active');
@@ -269,7 +267,7 @@ function toast(msg) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   3. NOW PLAYING BAR (AUDIO SYNTHESIS ENGINE)
+   3. NOW PLAYING BAR (AUDIO REPRODUCTION ENGINE)
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let isPlaying   = false;
 let elapsed     = 0;
@@ -278,6 +276,7 @@ let ticker      = null;
 let melodyTimer = null;
 let currentVolume = 0.8;
 let currentSong = null;
+let currentAudio = null;
 
 let currentQueue = SONGS_DATABASE.slice();
 let currentIndex = -1;
@@ -298,6 +297,12 @@ function playTrack(song, queue) {
 function playSong(song) {
   clearInterval(ticker);
   clearInterval(melodyTimer);
+  
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+
   currentSong = song;
   isPlaying = true;
   elapsed = 0;
@@ -316,7 +321,44 @@ function playSong(song) {
   total = m * 60 + (s || 0);
   document.getElementById('npTotal').textContent = song.duration;
 
+  // Setup HTML Audio element for real MP3 playback
+  currentAudio = new Audio(song.url);
+  currentAudio.volume = currentVolume;
+
+  currentAudio.addEventListener('loadedmetadata', () => {
+    total = currentAudio.duration;
+    document.getElementById('npTotal').textContent = fmt(total);
+  });
+
+  currentAudio.addEventListener('timeupdate', () => {
+    elapsed = currentAudio.currentTime;
+    updateProgressBar();
+  });
+
+  currentAudio.addEventListener('ended', () => {
+    nextTrack();
+  });
+
+  currentAudio.play().catch(err => {
+    console.warn("Failed to play MP3, using synth melody fallback:", err);
+    currentAudio = null;
+    startMelody(song);
+  });
+
   document.getElementById('npbar').classList.add('show', 'playing');
+  toast('🎵 Now playing: ' + song.title);
+}
+
+/* Synthesizer fallback melody generator (if MP3 stream fails or is offline) */
+function startMelody(song) {
+  clearInterval(melodyTimer);
+  const { pattern, rootShift, cfg } = buildMelody(song);
+  const ctx = getAudioCtx();
+  const noteDur = cfg.tempo * 0.92;
+  let noteIdx = 0;
+
+  // Let the user know we're using synthesis
+  toast('🎹 Synthesizing offline fallback melody...');
 
   ticker = setInterval(() => {
     if (!isPlaying) return;
@@ -327,17 +369,6 @@ function playSong(song) {
       nextTrack();
     }
   }, 1000);
-
-  startMelody(song);
-  toast('🎵 Now playing: ' + song.title);
-}
-
-function startMelody(song) {
-  clearInterval(melodyTimer);
-  const { pattern, rootShift, cfg } = buildMelody(song);
-  const ctx = getAudioCtx();
-  const noteDur = cfg.tempo * 0.92;
-  let noteIdx = 0;
 
   melodyTimer = setInterval(() => {
     if (!isPlaying || currentVolume <= 0) { noteIdx++; return; }
@@ -359,18 +390,41 @@ function togglePlay() {
   isPlaying = !isPlaying;
   document.getElementById('npBtn').textContent = isPlaying ? '⏸' : '▶';
   document.getElementById('npbar').classList.toggle('playing', isPlaying);
+
+  if (currentAudio) {
+    if (isPlaying) {
+      currentAudio.play().catch(e => console.warn(e));
+    } else {
+      currentAudio.pause();
+    }
+  } else {
+    // Synth fallback toggling
+    if (isPlaying) {
+      if (currentSong) startMelody(currentSong);
+    } else {
+      clearInterval(melodyTimer);
+      clearInterval(ticker);
+    }
+  }
 }
 
 function seekBar(e, el) {
   const rect = el.getBoundingClientRect();
   const pct  = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-  elapsed    = Math.floor(pct * total);
-  document.getElementById('npFill').style.width = `${pct * 100}%`;
-  document.getElementById('npElapsed').textContent = fmt(elapsed);
+  if (currentAudio && !isNaN(currentAudio.duration)) {
+    currentAudio.currentTime = pct * currentAudio.duration;
+  } else {
+    elapsed    = Math.floor(pct * total);
+    document.getElementById('npFill').style.width = `${pct * 100}%`;
+    document.getElementById('npElapsed').textContent = fmt(elapsed);
+  }
 }
 
 function changeVolume(val) {
   currentVolume = val / 100;
+  if (currentAudio) {
+    currentAudio.volume = currentVolume;
+  }
 }
 function changeVolumeToast(val) {
   toast('🔊 Volume: ' + val + '%');
@@ -380,6 +434,10 @@ function closePlayer() {
   isPlaying = false;
   clearInterval(ticker);
   clearInterval(melodyTimer);
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
   document.getElementById('npbar').classList.remove('show', 'playing');
 }
 
@@ -405,7 +463,7 @@ function prevTrack() {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   4. FAVOURITES (Including Sidebar library mapping)
+   4. FAVOURITES
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const favMap = new Map();
 
