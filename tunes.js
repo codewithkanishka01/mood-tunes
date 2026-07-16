@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   tunes.js — Clean External Streaming v6
+   tunes.js — Clean External Streaming v7
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
@@ -8,15 +8,15 @@
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    0. SONGS DATABASE
-   18 tracks — 3 per mood — using verified
-   external streaming URLs.
+   18 tracks — 3 per mood — using high-speed
+   CORS-enabled direct streaming URLs from GitHub.
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const L1 = "https://upload.wikimedia.org/wikipedia/commons/2/21/Suhani_Raat_Dhal_Chuki_instrumental.mp3";
-const L2 = "https://upload.wikimedia.org/wikipedia/commons/b/bb/Toreador_Song_remix.mp3";
-const L3 = "https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.mp3";
-const L4 = "https://upload.wikimedia.org/wikipedia/commons/5/5b/Ludwig_van_Beethoven_-_Symphony_No._5_in_C_minor%2C_Op._67_-_I._Allegro_con_brio.mp3";
-const L5 = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
-const L6 = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3";
+const L1 = "https://raw.githubusercontent.com/rafaelreis-hotmart/Audio-Sample-files/master/sample.mp3";
+const L2 = "https://raw.githubusercontent.com/goldfire/howler.js/master/examples/player/audio/80s_vibe.mp3";
+const L3 = "https://raw.githubusercontent.com/hanifwidi17/libermod/main/music.mp3";
+const L4 = "https://raw.githubusercontent.com/rafaelreis-hotmart/Audio-Sample-files/master/sample2.mp3";
+const L5 = "https://raw.githubusercontent.com/goldfire/howler.js/master/examples/player/audio/rave_digger.mp3";
+const L6 = "https://raw.githubusercontent.com/goldfire/howler.js/master/examples/player/audio/running_out.mp3";
 
 const MOOD_META = {
   happy:     { emoji: '😊', label: 'Happy',     grad: 'linear-gradient(145deg,#ff9a3c,#ff4d6d)', desc: 'Uplifting tunes to brighten your day',        badgeBg: 'rgba(255,154,60,.25)',  badgeBdr: 'rgba(255,154,60,.5)',  badgeText: '#ffb87a' },
@@ -205,10 +205,8 @@ function initAudio() {
 
   currentAudio.addEventListener('error', () => {
     console.error("HTML5 Audio loading error:", currentAudio.error);
-    toast("❌ This external song failed to load. Please try another one!");
-    isPlaying = false;
-    document.getElementById('npBtn').textContent = '▶';
-    document.getElementById('npbar').classList.remove('playing');
+    toast("❌ This song failed to stream. Loading next song...");
+    setTimeout(nextTrack, 2000);
   });
 }
 
@@ -250,10 +248,8 @@ function playSong(song) {
     currentAudio.load();
     currentAudio.play().catch(err => {
       console.warn("Autoplay block or loading error:", err);
-      toast("❌ This external song failed to load. Please try another one!");
-      isPlaying = false;
-      document.getElementById('npBtn').textContent = '▶';
-      document.getElementById('npbar').classList.remove('playing');
+      toast("❌ Stream failed. Playing next song...");
+      setTimeout(nextTrack, 2000);
     });
   }
 
@@ -277,10 +273,8 @@ function togglePlay() {
     if (isPlaying) {
       currentAudio.play().catch(e => {
         console.warn(e);
-        toast("❌ This external song failed to load. Please try another one!");
-        isPlaying = false;
-        document.getElementById('npBtn').textContent = '▶';
-        document.getElementById('npbar').classList.remove('playing');
+        toast("❌ Playback failed. Playing next...");
+        setTimeout(nextTrack, 2000);
       });
     } else {
       currentAudio.pause();
