@@ -1,10 +1,12 @@
 /* ══════════════════════════════════════════
-   tunes.js — Clean External Streaming v9
+   tunes.js — Clean External Streaming v9.1
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
 
 'use strict';
+
+console.log("🎵 tunes.js version 9.1 script loaded.");
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    0. SONGS DATABASE
@@ -80,6 +82,7 @@ let currentPage = null;
 const MOOD_NAMES = Object.keys(MOOD_META);
 
 function go(name) {
+  console.log("➡️ Routing to page:", name);
   if (currentPage) {
     const prev = document.getElementById('page-' + currentPage);
     if (prev) prev.classList.remove('active', 'page-enter');
@@ -88,7 +91,10 @@ function go(name) {
   document.querySelector('.content-viewport')?.scrollTo(0, 0);
 
   const next = document.getElementById('page-' + name);
-  if (!next) return;
+  if (!next) {
+    console.warn("⚠️ Target page does not exist:", name);
+    return;
+  }
   next.classList.add('active');
 
   if (MOOD_NAMES.includes(name)) {
@@ -127,6 +133,7 @@ if (document.readyState === 'loading') {
 }
 
 function boot() {
+  console.log("🔌 Booting application...");
   const savedAccent = localStorage.getItem('mt-accent');
   if (savedAccent) {
     document.documentElement.style.setProperty('--violet', savedAccent);
@@ -155,6 +162,7 @@ function updateMoodPillCounts() {
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let toastTimer;
 function toast(msg) {
+  console.log("💬 Toast Message:", msg);
   clearTimeout(toastTimer);
   document.getElementById('tmsg').textContent = msg;
   document.getElementById('toast').classList.add('show');
@@ -188,12 +196,15 @@ function initAudio() {
   if (!currentAudio) {
     console.warn("mainAudio element not found in DOM. Creating programmatic Audio fallback.");
     currentAudio = new Audio();
+  } else {
+    console.log("✅ HTML5 Static Audio element found and initialized.");
   }
 
   currentAudio.volume = currentVolume;
 
   currentAudio.addEventListener('loadedmetadata', () => {
     total = currentAudio.duration;
+    console.log("📊 Metadata loaded. Total duration:", total, fmt(total));
     document.getElementById('npTotal').textContent = fmt(total);
   });
 
@@ -203,6 +214,7 @@ function initAudio() {
   });
 
   currentAudio.addEventListener('ended', () => {
+    console.log("🏁 Song ended. Queueing next song...");
     nextTrack();
   });
 
@@ -210,16 +222,17 @@ function initAudio() {
     const err = currentAudio.error;
     if (err && err.code === 1) {
       // Interrupted by changing tracks (MEDIA_ERR_ABORTED). Ignore this safely.
-      console.log("Audio loading aborted (switching songs).");
+      console.log("ℹ️ Audio loading aborted (switching songs).");
       return;
     }
-    console.error("HTML5 Audio loading error:", err);
+    console.error("❌ HTML5 Audio loading error:", err);
     toast("❌ Song failed to load. Trying next track...");
     setTimeout(nextTrack, 1500);
   });
 }
 
 function playTrack(song, queue) {
+  console.log("🖱️ User requested song:", song.title, "by", song.artist);
   if (queue && queue.length) currentQueue = queue;
   currentIndex = currentQueue.findIndex(s => s.id === song.id);
   if (currentIndex === -1) { currentQueue = [song]; currentIndex = 0; }
@@ -228,6 +241,7 @@ function playTrack(song, queue) {
 }
 
 function playSong(song) {
+  console.log("🎵 Streaming song:", song.title, "from URL:", song.url);
   clearInterval(ticker);
 
   if (currentAudio) {
@@ -255,13 +269,15 @@ function playSong(song) {
   if (currentAudio) {
     currentAudio.src = song.url;
     currentAudio.load();
-    currentAudio.play().catch(err => {
+    currentAudio.play().then(() => {
+      console.log("▶️ Audio playback started successfully.");
+    }).catch(err => {
       if (err.name === 'AbortError') {
         // Ignored safely as it represents a new track selection interrupting this one.
-        console.log("Playback interrupted by another request (AbortError).");
+        console.log("ℹ️ Playback interrupted by another request (AbortError).");
         return;
       }
-      console.warn("Autoplay block or loading error:", err);
+      console.warn("⚠️ Playback promise rejected:", err);
       toast("❌ Song failed to play. Trying next...");
       setTimeout(nextTrack, 1500);
     });
@@ -280,6 +296,7 @@ function updateProgressBar() {
 
 function togglePlay() {
   isPlaying = !isPlaying;
+  console.log("⏯ Play/Pause toggled. New state isPlaying:", isPlaying);
   document.getElementById('npBtn').textContent = isPlaying ? '⏸' : '▶';
   document.getElementById('npbar').classList.toggle('playing', isPlaying);
 
@@ -302,6 +319,7 @@ function seekBar(e, el) {
   const pct  = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
   if (currentAudio && !isNaN(currentAudio.duration)) {
     currentAudio.currentTime = pct * currentAudio.duration;
+    console.log("⏩ Seeked to percentage:", pct * 100);
   } else {
     elapsed    = Math.floor(pct * total);
     document.getElementById('npFill').style.width = `${pct * 100}%`;
@@ -321,6 +339,7 @@ function changeVolumeToast(val) {
 
 function closePlayer() {
   isPlaying = false;
+  console.log("⏹ Closing player bar...");
   clearInterval(ticker);
   if (currentAudio) {
     currentAudio.pause();
