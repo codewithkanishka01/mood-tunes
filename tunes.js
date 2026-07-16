@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   tunes.js — Spotify Redesign Logic v6
+   tunes.js — Clean External Streaming v6
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
@@ -8,29 +8,15 @@
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    0. SONGS DATABASE
-   30 tracks — 5 per mood — mixing English
-   Pop/Indie, Hindi Bollywood classics, Sufi,
-   Desi Hip-Hop, Lo-fi and Instrumental.
+   18 tracks — 3 per mood — using verified
+   external streaming URLs.
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const AUDIO_POOL = [
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3",
-  "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3"
-];
-const au = i => AUDIO_POOL[i % AUDIO_POOL.length];
+const L1 = "https://upload.wikimedia.org/wikipedia/commons/2/21/Suhani_Raat_Dhal_Chuki_instrumental.mp3";
+const L2 = "https://upload.wikimedia.org/wikipedia/commons/b/bb/Toreador_Song_remix.mp3";
+const L3 = "https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.mp3";
+const L4 = "https://upload.wikimedia.org/wikipedia/commons/5/5b/Ludwig_van_Beethoven_-_Symphony_No._5_in_C_minor%2C_Op._67_-_I._Allegro_con_brio.mp3";
+const L5 = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+const L6 = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3";
 
 const MOOD_META = {
   happy:     { emoji: '😊', label: 'Happy',     grad: 'linear-gradient(145deg,#ff9a3c,#ff4d6d)', desc: 'Uplifting tunes to brighten your day',        badgeBg: 'rgba(255,154,60,.25)',  badgeBdr: 'rgba(255,154,60,.5)',  badgeText: '#ffb87a' },
@@ -41,126 +27,36 @@ const MOOD_META = {
   focus:     { emoji: '🎯', label: 'Focus',     grad: 'linear-gradient(145deg,#7b2ff7,#3a0ca3)', desc: 'Deep work music for the zone',                badgeBg: 'rgba(123,47,247,.25)',  badgeBdr: 'rgba(123,47,247,.5)',  badgeText: '#c4a6ff' }
 };
 
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SYNTHESIZER FALLBACK MELODY ENGINE
- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const SCALE_MAJOR      = [0, 2, 4, 5, 7, 9, 11, 12];
-const SCALE_MINOR      = [0, 2, 3, 5, 7, 8, 10, 12];
-const SCALE_PENTATONIC = [0, 2, 4, 7, 9, 12];
-const SCALE_HARM_MINOR = [0, 2, 3, 5, 7, 8, 11, 12];
-const SCALE_SPARSE     = [0, 5, 7, 12];
-
-const MOOD_SOUND = {
-  happy:     { scale: SCALE_MAJOR,      root: 294, tempo: .30, wave: 'triangle' },
-  sad:       { scale: SCALE_MINOR,      root: 220, tempo: .58, wave: 'sine'     },
-  relaxed:   { scale: SCALE_PENTATONIC, root: 262, tempo: .66, wave: 'sine'     },
-  energetic: { scale: SCALE_MAJOR,      root: 330, tempo: .19, wave: 'square'   },
-  romantic:  { scale: SCALE_HARM_MINOR, root: 247, tempo: .44, wave: 'triangle' },
-  focus:     { scale: SCALE_SPARSE,     root: 196, tempo: .90, wave: 'sine'     }
-};
-
-function mulberry32(seed) {
-  return function () {
-    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function hashString(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) { h = Math.imul(31, h) + str.charCodeAt(i) | 0; }
-  return h >>> 0;
-}
-
-const melodyCache = new Map();
-function buildMelody(song) {
-  if (melodyCache.has(song.id)) return melodyCache.get(song.id);
-
-  const cfg  = MOOD_SOUND[song.mood] || MOOD_SOUND.focus;
-  const rand = mulberry32(song.id * 9973 + hashString(song.title));
-  const len  = 8 + Math.floor(rand() * 5);
-
-  const pattern = [];
-  for (let i = 0; i < len; i++) {
-    const degree = cfg.scale[Math.floor(rand() * cfg.scale.length)];
-    const octaveUp = rand() < 0.15 ? 12 : 0;
-    pattern.push(degree + octaveUp);
-  }
-  const rootShift = Math.floor(rand() * 4) * 2;
-
-  const melody = { pattern, rootShift, cfg };
-  melodyCache.set(song.id, melody);
-  return melody;
-}
-
-let audioCtx = null;
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-  return audioCtx;
-}
-
-function playNote(ctx, freq, wave, noteDurationSec, volume) {
-  const osc  = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = wave;
-  osc.frequency.setValueAtTime(freq, ctx.currentTime);
-  gain.gain.setValueAtTime(0, ctx.currentTime);
-  gain.gain.linearRampToValueAtTime(Math.max(volume, 0.001) * 0.25, ctx.currentTime + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + noteDurationSec);
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start();
-  osc.stop(ctx.currentTime + noteDurationSec + 0.05);
-}
-
-const MOOD_SEED_COUNTS = { happy: 32, focus: 28, relaxed: 21, energetic: 18, romantic: 14, sad: 11 };
-
-/* Overhauled Multilingual Curated Songs Database */
 const SONGS_DATABASE = [
   /* ───────── 😊 HAPPY ───────── */
-  { id: 1, title: "Uptown Funk", artist: "Bruno Mars & Mark Ronson", emoji: "🕺", duration: "4:30", genre: "Pop", mood: "happy", plays: 15200, url: au(1) },
-  { id: 2, title: "Badtameez Dil", artist: "Benny Dayal", emoji: "💃", duration: "4:09", genre: "Bollywood", mood: "happy", plays: 14100, url: au(2) },
-  { id: 3, title: "Zingaat", artist: "Ajay-Atul", emoji: "🎉", duration: "3:45", genre: "Bollywood", mood: "happy", plays: 12870, url: au(3) },
-  { id: 4, title: "Can't Stop the Feeling!", artist: "Justin Timberlake", emoji: "🌈", duration: "3:56", genre: "Pop", mood: "happy", plays: 11640, url: au(4) },
-  { id: 5, title: "Kar Har Maidaan Fateh", artist: "Sukhwinder Singh", emoji: "🏁", duration: "5:18", genre: "Bollywood", mood: "happy", plays: 10980, url: au(5) },
+  { id: 1, title: "Suhani Raat (Instrumental)", artist: "Mohammad Rafi", emoji: "🎺", duration: "3:15", genre: "Bollywood", mood: "happy", plays: 15200, url: L1 },
+  { id: 2, title: "Toreador Song Remix", artist: "Bizet", emoji: "🕺", duration: "2:54", genre: "Pop", mood: "happy", plays: 14100, url: L2 },
+  { id: 3, title: "Uptown Funk", artist: "Bruno Mars", emoji: "🕺", duration: "4:30", genre: "Pop", mood: "happy", plays: 12870, url: L5 },
 
   /* ───────── 😢 SAD ───────── */
-  { id: 6, title: "Channa Mereya", artist: "Arijit Singh", emoji: "💔", duration: "4:49", genre: "Bollywood", mood: "sad", plays: 14680, url: au(6) },
-  { id: 7, title: "Someone Like You", artist: "Adele", emoji: "🌧️", duration: "4:45", genre: "Pop", mood: "sad", plays: 13210, url: au(7) },
-  { id: 8, title: "Agar Tum Saath Ho", artist: "Alka Yagnik & Arijit Singh", emoji: "🥀", duration: "5:41", genre: "Bollywood", mood: "sad", plays: 12040, url: au(8) },
-  { id: 9, title: "Lovely", artist: "Billie Eilish ft. Khalid", emoji: "😔", duration: "3:20", genre: "Indie", mood: "sad", plays: 11390, url: au(9) },
-  { id: 10, title: "Kabira", artist: "Tochi Raina & Rekha Bhardwaj", emoji: "🚪", duration: "3:43", genre: "Bollywood", mood: "sad", plays: 9870, url: au(10) },
+  { id: 4, title: "Channa Mereya", artist: "Arijit Singh", emoji: "💔", duration: "4:49", genre: "Bollywood", mood: "sad", plays: 14680, url: L1 },
+  { id: 5, title: "Someone Like You", artist: "Adele", emoji: "🌧️", duration: "4:45", genre: "Pop", mood: "sad", plays: 13210, url: L3 },
+  { id: 6, title: "Lovely", artist: "Billie Eilish ft. Khalid", emoji: "😔", duration: "3:20", genre: "Indie", mood: "sad", plays: 11390, url: L6 },
 
   /* ───────── 😌 RELAXED ───────── */
-  { id: 11, title: "Kun Faya Kun", artist: "A.R. Rahman, Javed Ali, Mohit Chauhan", emoji: "🕌", duration: "7:50", genre: "Sufi", mood: "relaxed", plays: 13840, url: au(11) },
-  { id: 12, title: "Iktara", artist: "Kavita Seth & Amitabh Bhattacharya", emoji: "🎸", duration: "4:12", genre: "Bollywood", mood: "relaxed", plays: 12210, url: au(12) },
-  { id: 13, title: "Strawberry Fields Forever", artist: "The Beatles", emoji: "🍓", duration: "4:07", genre: "Indie", mood: "relaxed", plays: 10630, url: au(13) },
-  { id: 14, title: "Sunset Lover", artist: "Petit Biscuit", emoji: "🌅", duration: "3:57", genre: "Lo-fi", mood: "relaxed", plays: 9370, url: au(14) },
-  { id: 15, title: "Rangi Saari", artist: "Kavita Seth & Kanishk Seth", emoji: "🕊️", duration: "3:53", genre: "Sufi", mood: "relaxed", plays: 8140, url: au(15) },
+  { id: 7, title: "Iktara", artist: "Kavita Seth", emoji: "🎸", duration: "4:12", genre: "Bollywood", mood: "relaxed", plays: 12210, url: L3 },
+  { id: 8, title: "Sunset Lover", artist: "Petit Biscuit", emoji: "🌅", duration: "3:57", genre: "Lo-fi", mood: "relaxed", plays: 9370, url: L6 },
+  { id: 9, title: "Symphony No. 5", artist: "Ludwig van Beethoven", emoji: "🎼", duration: "7:02", genre: "Classical", mood: "relaxed", plays: 10630, url: L4 },
 
   /* ───────── ⚡ ENERGETIC ───────── */
-  { id: 16, title: "Blinding Lights", artist: "The Weeknd", emoji: "💥", duration: "3:20", genre: "Pop", mood: "energetic", plays: 15980, url: au(0) },
-  { id: 17, title: "Apna Time Aayega", artist: "Ranveer Singh & DIVINE", emoji: "🎤", duration: "3:24", genre: "Desi Hip-Hop", mood: "energetic", plays: 14320, url: au(1) },
-  { id: 18, title: "Malhari", artist: "Vishal Dadlani", emoji: "🔥", duration: "3:36", genre: "Bollywood", mood: "energetic", plays: 13110, url: au(2) },
-  { id: 19, title: "Machayenge", artist: "Emiway Bantai", emoji: "⚡", duration: "2:55", genre: "Desi Hip-Hop", mood: "energetic", plays: 12040, url: au(3) },
-  { id: 20, title: "Levels", artist: "Avicii", emoji: "🎛️", duration: "3:19", genre: "EDM", mood: "energetic", plays: 10870, url: au(4) },
+  { id: 10, title: "Toreador Dance Remix", artist: "Bizet", emoji: "💥", duration: "2:54", genre: "EDM", mood: "energetic", plays: 13110, url: L2 },
+  { id: 11, title: "Blinding Lights", artist: "The Weeknd", emoji: "💥", duration: "3:20", genre: "Pop", mood: "energetic", plays: 15980, url: L5 },
+  { id: 12, title: "Apna Time Aayega", artist: "Ranveer Singh", emoji: "🎤", duration: "3:24", genre: "Desi Hip-Hop", mood: "energetic", plays: 14320, url: L6 },
 
   /* ───────── 💕 ROMANTIC ───────── */
-  { id: 21, title: "Perfect", artist: "Ed Sheeran", emoji: "💍", duration: "4:23", genre: "Pop", mood: "romantic", plays: 16240, url: au(5) },
-  { id: 22, title: "Tum Hi Ho", artist: "Arijit Singh", emoji: "🌹", duration: "4:22", genre: "Bollywood", mood: "romantic", plays: 15010, url: au(6) },
-  { id: 23, title: "Raabta", artist: "Arijit Singh & Shreya Ghoshal", emoji: "💫", duration: "4:03", genre: "Bollywood", mood: "romantic", plays: 13560, url: au(7) },
-  { id: 24, title: "All of Me", artist: "John Legend", emoji: "❤️", duration: "4:29", genre: "Pop", mood: "romantic", plays: 12280, url: au(8) },
-  { id: 25, title: "Kesariya", artist: "Arijit Singh", emoji: "🍁", duration: "4:28", genre: "Bollywood", mood: "romantic", plays: 11090, url: au(9) },
+  { id: 13, title: "Tum Hi Ho", artist: "Arijit Singh", emoji: "🌹", duration: "4:22", genre: "Bollywood", mood: "romantic", plays: 15010, url: L1 },
+  { id: 14, title: "Perfect", artist: "Ed Sheeran", emoji: "💍", duration: "4:23", genre: "Pop", mood: "romantic", plays: 16240, url: L3 },
+  { id: 15, title: "Kesariya", artist: "Arijit Singh", emoji: "🍁", duration: "4:28", genre: "Bollywood", mood: "romantic", plays: 11090, url: L5 },
 
   /* ───────── 🎯 FOCUS ───────── */
-  { id: 26, title: "Time", artist: "Hans Zimmer", emoji: "⏳", duration: "4:35", genre: "Ambient", mood: "focus", plays: 12760, url: au(10) },
-  { id: 27, title: "River Flows in You", artist: "Yiruma", emoji: "🎹", duration: "3:08", genre: "Instrumental", mood: "focus", plays: 11340, url: au(11) },
-  { id: 28, title: "Experience", artist: "Ludovico Einaudi", emoji: "🎼", duration: "5:15", genre: "Instrumental", mood: "focus", plays: 10280, url: au(12) },
-  { id: 29, title: "Lofi Study Beats", artist: "Chillhop Essentials", emoji: "📚", duration: "3:45", genre: "Lo-fi", mood: "focus", plays: 9160, url: au(13) },
-  { id: 30, title: "Intro", artist: "The xx", emoji: "🎧", duration: "2:08", genre: "Indie", mood: "focus", plays: 8040, url: au(14) }
+  { id: 16, title: "Symphony No. 5 (Focus Edit)", artist: "Ludwig van Beethoven", emoji: "⏳", duration: "7:02", genre: "Classical", mood: "focus", plays: 12760, url: L4 },
+  { id: 17, title: "Time", artist: "Hans Zimmer", emoji: "⏳", duration: "4:35", genre: "Ambient", mood: "focus", plays: 9160, url: L5 },
+  { id: 18, title: "River Flows in You", artist: "Yiruma", emoji: "🎹", duration: "3:08", genre: "Instrumental", mood: "focus", plays: 11340, url: L4 }
 ];
 
 const GENRE_FILTER_MAP = {
@@ -171,7 +67,8 @@ const GENRE_FILTER_MAP = {
   'EDM': 'edm',
   'Lo-fi': 'lofi',
   'Ambient': 'ambient', 'Instrumental': 'ambient',
-  'Indie': 'indie'
+  'Indie': 'indie',
+  'Classical': 'classical'
 };
 const normGenre = g => GENRE_FILTER_MAP[g] || g.toLowerCase().replace(/[^a-z]/g, '');
 
@@ -268,17 +165,15 @@ function toast(msg) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   3. NOW PLAYING BAR (AUDIO REPRODUCTION ENGINE)
+   3. NOW PLAYING BAR (HTML5 AUDIO REGISTRATION)
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let isPlaying   = false;
 let elapsed     = 0;
 let total       = 0;
 let ticker      = null;
-let melodyTimer = null;
 let currentVolume = 0.8;
 let currentSong = null;
 let currentAudio = null;
-let isUsingSynth = false;
 
 let currentQueue = SONGS_DATABASE.slice();
 let currentIndex = -1;
@@ -288,7 +183,6 @@ const fmt = s => {
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 };
 
-/* Initialize static DOM audio element event listeners once */
 function initAudio() {
   currentAudio = document.getElementById('mainAudio');
   if (!currentAudio) return;
@@ -301,7 +195,6 @@ function initAudio() {
   });
 
   currentAudio.addEventListener('timeupdate', () => {
-    if (isUsingSynth) return;
     elapsed = currentAudio.currentTime;
     updateProgressBar();
   });
@@ -310,23 +203,12 @@ function initAudio() {
     nextTrack();
   });
 
-  currentAudio.addEventListener('error', (e) => {
-    const err = currentAudio.error;
-    let msg = "Network CORS block or server down";
-    if (err) {
-      if (err.code === 1) msg = "Playback aborted by user";
-      if (err.code === 2) msg = "Network error while downloading";
-      if (err.code === 3) msg = "Audio decoding failed (corrupt file)";
-      if (err.code === 4) msg = "Format not supported or server blocked link";
-    }
-    console.error("HTML5 Audio element error event triggered:", err, msg);
-    toast("⚠️ Audio Error: " + msg);
-    
-    // Auto-fall back to synthesized melody if stream blocks
-    if (isPlaying && !isUsingSynth) {
-      currentAudio.pause();
-      startMelody(currentSong);
-    }
+  currentAudio.addEventListener('error', () => {
+    console.error("HTML5 Audio loading error:", currentAudio.error);
+    toast("❌ This external song failed to load. Please try another one!");
+    isPlaying = false;
+    document.getElementById('npBtn').textContent = '▶';
+    document.getElementById('npbar').classList.remove('playing');
   });
 }
 
@@ -340,9 +222,7 @@ function playTrack(song, queue) {
 
 function playSong(song) {
   clearInterval(ticker);
-  clearInterval(melodyTimer);
-  isUsingSynth = false;
-  
+
   if (currentAudio) {
     currentAudio.pause();
   }
@@ -369,46 +249,16 @@ function playSong(song) {
     currentAudio.src = song.url;
     currentAudio.load();
     currentAudio.play().catch(err => {
-      console.warn("Autoplay block or direct play failure, running fallback:", err);
-      // If browser blocks direct play (e.g. gesture issue or blocked link), run synth
-      startMelody(song);
+      console.warn("Autoplay block or loading error:", err);
+      toast("❌ This external song failed to load. Please try another one!");
+      isPlaying = false;
+      document.getElementById('npBtn').textContent = '▶';
+      document.getElementById('npbar').classList.remove('playing');
     });
-  } else {
-    startMelody(song);
   }
 
   document.getElementById('npbar').classList.add('show', 'playing');
   toast('🎵 Now playing: ' + song.title);
-}
-
-/* Synthesizer fallback melody generator (if MP3 stream fails or is offline) */
-function startMelody(song) {
-  clearInterval(melodyTimer);
-  isUsingSynth = true;
-  const { pattern, rootShift, cfg } = buildMelody(song);
-  const ctx = getAudioCtx();
-  const noteDur = cfg.tempo * 0.92;
-  let noteIdx = 0;
-
-  toast('🎹 Playing synthesised fallback tune...');
-
-  ticker = setInterval(() => {
-    if (!isPlaying) return;
-    elapsed++;
-    updateProgressBar();
-    if (elapsed >= total) {
-      clearInterval(ticker);
-      nextTrack();
-    }
-  }, 1000);
-
-  melodyTimer = setInterval(() => {
-    if (!isPlaying || currentVolume <= 0) { noteIdx++; return; }
-    const semitone = rootShift + pattern[noteIdx % pattern.length];
-    const freq = cfg.root * Math.pow(2, semitone / 12);
-    playNote(ctx, freq, cfg.wave, noteDur, currentVolume);
-    noteIdx++;
-  }, cfg.tempo * 1000);
 }
 
 function updateProgressBar() {
@@ -423,19 +273,17 @@ function togglePlay() {
   document.getElementById('npBtn').textContent = isPlaying ? '⏸' : '▶';
   document.getElementById('npbar').classList.toggle('playing', isPlaying);
 
-  if (currentAudio && !isUsingSynth) {
+  if (currentAudio) {
     if (isPlaying) {
-      currentAudio.play().catch(e => console.warn(e));
+      currentAudio.play().catch(e => {
+        console.warn(e);
+        toast("❌ This external song failed to load. Please try another one!");
+        isPlaying = false;
+        document.getElementById('npBtn').textContent = '▶';
+        document.getElementById('npbar').classList.remove('playing');
+      });
     } else {
       currentAudio.pause();
-    }
-  } else {
-    // Synth fallback toggling
-    if (isPlaying) {
-      if (currentSong) startMelody(currentSong);
-    } else {
-      clearInterval(melodyTimer);
-      clearInterval(ticker);
     }
   }
 }
@@ -443,7 +291,7 @@ function togglePlay() {
 function seekBar(e, el) {
   const rect = el.getBoundingClientRect();
   const pct  = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-  if (currentAudio && !isUsingSynth && !isNaN(currentAudio.duration)) {
+  if (currentAudio && !isNaN(currentAudio.duration)) {
     currentAudio.currentTime = pct * currentAudio.duration;
   } else {
     elapsed    = Math.floor(pct * total);
@@ -465,7 +313,6 @@ function changeVolumeToast(val) {
 function closePlayer() {
   isPlaying = false;
   clearInterval(ticker);
-  clearInterval(melodyTimer);
   if (currentAudio) {
     currentAudio.pause();
   }
@@ -537,7 +384,6 @@ function renderFavList() {
   favSongs.forEach((song, i) => list.appendChild(buildSongRow(song, i + 1, favSongs)));
 }
 
-/* Sidebar Favorite library list renderer */
 function renderSidebarFavs() {
   const list = document.getElementById('sidebarFavList');
   if (!list) return;
@@ -886,12 +732,12 @@ function renderMoodHistory() {
 
   const combined = MOOD_NAMES.map(mood => ({
     mood,
-    count: (MOOD_SEED_COUNTS[mood] || 0) + (sessionMoodCounts[mood] || 0)
+    count: (sessionMoodCounts[mood] || 0)
   })).sort((a, b) => b.count - a.count);
 
   badgeWrap.innerHTML = combined.map(({ mood, count }) => {
     const m = MOOD_META[mood];
-    return `<span class="mood-badge" style="background:${m.badgeBg};border:1px solid ${m.badgeBdr};color:${m.badgeText}">${m.emoji} ${m.label} ×${count}</span>`;
+    return `<span class="mood-badge" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--text)">${m.emoji} ${m.label} ×${count}</span>`;
   }).join('');
 
   if (banner && combined.length) {
