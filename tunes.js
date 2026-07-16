@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   tunes.js — Spotify Redesign Logic v5
+   tunes.js — Spotify Redesign Logic v6
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
@@ -238,6 +238,7 @@ function boot() {
     });
   }
   updateMoodPillCounts();
+  initAudio();
   renderSidebarFavs();
   go('home');
 }
@@ -277,6 +278,7 @@ let melodyTimer = null;
 let currentVolume = 0.8;
 let currentSong = null;
 let currentAudio = null;
+let isUsingSynth = false;
 
 let currentQueue = SONGS_DATABASE.slice();
 let currentIndex = -1;
@@ -285,6 +287,48 @@ const fmt = s => {
   if (isNaN(s)) return '0:00';
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 };
+
+/* Initialize static DOM audio element event listeners once */
+function initAudio() {
+  currentAudio = document.getElementById('mainAudio');
+  if (!currentAudio) return;
+
+  currentAudio.volume = currentVolume;
+
+  currentAudio.addEventListener('loadedmetadata', () => {
+    total = currentAudio.duration;
+    document.getElementById('npTotal').textContent = fmt(total);
+  });
+
+  currentAudio.addEventListener('timeupdate', () => {
+    if (isUsingSynth) return;
+    elapsed = currentAudio.currentTime;
+    updateProgressBar();
+  });
+
+  currentAudio.addEventListener('ended', () => {
+    nextTrack();
+  });
+
+  currentAudio.addEventListener('error', (e) => {
+    const err = currentAudio.error;
+    let msg = "Network CORS block or server down";
+    if (err) {
+      if (err.code === 1) msg = "Playback aborted by user";
+      if (err.code === 2) msg = "Network error while downloading";
+      if (err.code === 3) msg = "Audio decoding failed (corrupt file)";
+      if (err.code === 4) msg = "Format not supported or server blocked link";
+    }
+    console.error("HTML5 Audio element error event triggered:", err, msg);
+    toast("⚠️ Audio Error: " + msg);
+    
+    // Auto-fall back to synthesized melody if stream blocks
+    if (isPlaying && !isUsingSynth) {
+      currentAudio.pause();
+      startMelody(currentSong);
+    }
+  });
+}
 
 function playTrack(song, queue) {
   if (queue && queue.length) currentQueue = queue;
@@ -297,10 +341,10 @@ function playTrack(song, queue) {
 function playSong(song) {
   clearInterval(ticker);
   clearInterval(melodyTimer);
+  isUsingSynth = false;
   
   if (currentAudio) {
     currentAudio.pause();
-    currentAudio = null;
   }
 
   currentSong = song;
@@ -321,29 +365,17 @@ function playSong(song) {
   total = m * 60 + (s || 0);
   document.getElementById('npTotal').textContent = song.duration;
 
-  // Setup HTML Audio element for real MP3 playback
-  currentAudio = new Audio(song.url);
-  currentAudio.volume = currentVolume;
-
-  currentAudio.addEventListener('loadedmetadata', () => {
-    total = currentAudio.duration;
-    document.getElementById('npTotal').textContent = fmt(total);
-  });
-
-  currentAudio.addEventListener('timeupdate', () => {
-    elapsed = currentAudio.currentTime;
-    updateProgressBar();
-  });
-
-  currentAudio.addEventListener('ended', () => {
-    nextTrack();
-  });
-
-  currentAudio.play().catch(err => {
-    console.warn("Failed to play MP3, using synth melody fallback:", err);
-    currentAudio = null;
+  if (currentAudio) {
+    currentAudio.src = song.url;
+    currentAudio.load();
+    currentAudio.play().catch(err => {
+      console.warn("Autoplay block or direct play failure, running fallback:", err);
+      // If browser blocks direct play (e.g. gesture issue or blocked link), run synth
+      startMelody(song);
+    });
+  } else {
     startMelody(song);
-  });
+  }
 
   document.getElementById('npbar').classList.add('show', 'playing');
   toast('🎵 Now playing: ' + song.title);
@@ -352,13 +384,13 @@ function playSong(song) {
 /* Synthesizer fallback melody generator (if MP3 stream fails or is offline) */
 function startMelody(song) {
   clearInterval(melodyTimer);
+  isUsingSynth = true;
   const { pattern, rootShift, cfg } = buildMelody(song);
   const ctx = getAudioCtx();
   const noteDur = cfg.tempo * 0.92;
   let noteIdx = 0;
 
-  // Let the user know we're using synthesis
-  toast('🎹 Synthesizing offline fallback melody...');
+  toast('🎹 Playing synthesised fallback tune...');
 
   ticker = setInterval(() => {
     if (!isPlaying) return;
@@ -391,7 +423,7 @@ function togglePlay() {
   document.getElementById('npBtn').textContent = isPlaying ? '⏸' : '▶';
   document.getElementById('npbar').classList.toggle('playing', isPlaying);
 
-  if (currentAudio) {
+  if (currentAudio && !isUsingSynth) {
     if (isPlaying) {
       currentAudio.play().catch(e => console.warn(e));
     } else {
@@ -411,7 +443,7 @@ function togglePlay() {
 function seekBar(e, el) {
   const rect = el.getBoundingClientRect();
   const pct  = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-  if (currentAudio && !isNaN(currentAudio.duration)) {
+  if (currentAudio && !isUsingSynth && !isNaN(currentAudio.duration)) {
     currentAudio.currentTime = pct * currentAudio.duration;
   } else {
     elapsed    = Math.floor(pct * total);
@@ -436,7 +468,6 @@ function closePlayer() {
   clearInterval(melodyTimer);
   if (currentAudio) {
     currentAudio.pause();
-    currentAudio = null;
   }
   document.getElementById('npbar').classList.remove('show', 'playing');
 }
