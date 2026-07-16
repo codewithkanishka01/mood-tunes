@@ -7,7 +7,8 @@
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
 
   <!-- External stylesheet — all styles live here -->
   <link rel="stylesheet" href="tunes.css"/>
@@ -21,7 +22,7 @@
      the active page's button. The hamburger
      (visible only under 780px) toggles the
      .nav-links sheet via toggleMobileNav().
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <nav>
   <div class="logo" onclick="go('home')">🎵 MoodTunes</div>
   <ul class="nav-links">
@@ -32,7 +33,11 @@
     <li><button id="nb-profile"  onclick="go('profile')">Profile</button></li>
     <li><button id="nb-login"    onclick="go('login')" class="nav-cta">Sign In</button></li>
   </ul>
-  <button class="nav-burger" aria-label="Toggle menu" onclick="toggleMobileNav()"><span></span><span></span><span></span></button>
+  <button class="nav-burger" aria-label="Toggle menu" onclick="toggleMobileNav()">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </nav>
 
 <!-- Toast notification — shown/hidden by JS toast() -->
@@ -42,7 +47,7 @@
 <!-- ═══════════════════════════════════════════
      PAGE: HOME
      id="page-home" — JS adds .active to show
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div id="page-home" class="page active page-enter">
 
   <!-- Hero Section -->
@@ -92,7 +97,7 @@
   <section class="wrap">
     <div class="stats-row">
       <div class="stat-card sc1"><div class="stat-n">6</div><div class="stat-l">Mood Categories</div></div>
-      <div class="stat-card sc2"><div class="stat-n">60+</div><div class="stat-l">Curated Songs</div></div>
+      <div class="stat-card sc2"><div class="stat-n">30</div><div class="stat-l">Curated Songs</div></div>
       <div class="stat-card sc3"><div class="stat-n">100%</div><div class="stat-l">Free Access</div></div>
       <div class="stat-card sc4"><div class="stat-n">24/7</div><div class="stat-l">Available</div></div>
       <div class="stat-card sc5"><div class="stat-n">10K+</div><div class="stat-l">Monthly Users</div></div>
@@ -118,12 +123,12 @@
     <h2 class="sec-title">Choose Your <span class="gl">Mood</span></h2>
     <p class="sec-sub">How are you feeling right now?</p>
     <div class="mood-grid">
-      <button class="mood-card mc-happy"    onclick="go('happy')"     data-mood="happy"><span class="mood-icon-big">😊</span><h3>Happy</h3><p>Uplifting &amp; joyful</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-sad"      onclick="go('sad')"       data-mood="sad"><span class="mood-icon-big">😢</span><h3>Sad</h3><p>Emotional &amp; reflective</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-relaxed"  onclick="go('relaxed')"   data-mood="relaxed"><span class="mood-icon-big">😌</span><h3>Relaxed</h3><p>Calm &amp; peaceful</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-energy"   onclick="go('energetic')" data-mood="energetic"><span class="mood-icon-big">⚡</span><h3>Energetic</h3><p>High-energy beats</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-romantic" onclick="go('romantic')"  data-mood="romantic"><span class="mood-icon-big">💕</span><h3>Romantic</h3><p>Love &amp; passion</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-focus"    onclick="go('focus')"     data-mood="focus"><span class="mood-icon-big">🎯</span><h3>Focus</h3><p>Deep concentration</p><span class="mood-pill">10 songs</span></button>
+      <button class="mood-card mc-happy"    onclick="go('happy')"     data-mood="happy"><span class="mood-icon-big">😊</span><h3>Happy</h3><p>Uplifting &amp; joyful</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-sad"      onclick="go('sad')"       data-mood="sad"><span class="mood-icon-big">😢</span><h3>Sad</h3><p>Emotional &amp; reflective</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-relaxed"  onclick="go('relaxed')"   data-mood="relaxed"><span class="mood-icon-big">😌</span><h3>Relaxed</h3><p>Calm &amp; peaceful</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-energy"   onclick="go('energetic')" data-mood="energetic"><span class="mood-icon-big">⚡</span><h3>Energetic</h3><p>High-energy beats</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-romantic" onclick="go('romantic')"  data-mood="romantic"><span class="mood-icon-big">💕</span><h3>Romantic</h3><p>Love &amp; passion</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-focus"    onclick="go('focus')"     data-mood="focus"><span class="mood-icon-big">🎯</span><h3>Focus</h3><p>Deep concentration</p><span class="mood-pill">5 songs</span></button>
     </div>
   </section>
 </div><!-- end #page-home -->
@@ -131,7 +136,7 @@
 
 <!-- ═══════════════════════════════════════════
      PAGE: MOODS
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div id="page-moods" class="page">
   <section class="wrap">
     <h2 class="sec-title">All <span class="ga">Moods</span></h2>
@@ -143,12 +148,12 @@
     </div>
     <!-- data-name used by filterMoods(); data-mood used by updateMoodPillCounts() -->
     <div class="mood-grid" id="moodGrid">
-      <button class="mood-card mc-happy"    onclick="go('happy')"     data-name="happy"     data-mood="happy"><span class="mood-icon-big">😊</span><h3>Happy</h3><p>Uplifting &amp; joyful</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-sad"      onclick="go('sad')"       data-name="sad"       data-mood="sad"><span class="mood-icon-big">😢</span><h3>Sad</h3><p>Emotional &amp; reflective</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-relaxed"  onclick="go('relaxed')"   data-name="relaxed"   data-mood="relaxed"><span class="mood-icon-big">😌</span><h3>Relaxed</h3><p>Calm &amp; peaceful</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-energy"   onclick="go('energetic')" data-name="energetic" data-mood="energetic"><span class="mood-icon-big">⚡</span><h3>Energetic</h3><p>High-energy beats</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-romantic" onclick="go('romantic')"  data-name="romantic"  data-mood="romantic"><span class="mood-icon-big">💕</span><h3>Romantic</h3><p>Love &amp; passion</p><span class="mood-pill">10 songs</span></button>
-      <button class="mood-card mc-focus"    onclick="go('focus')"     data-name="focus"     data-mood="focus"><span class="mood-icon-big">🎯</span><h3>Focus</h3><p>Deep concentration</p><span class="mood-pill">10 songs</span></button>
+      <button class="mood-card mc-happy"    onclick="go('happy')"     data-name="happy"     data-mood="happy"><span class="mood-icon-big">😊</span><h3>Happy</h3><p>Uplifting &amp; joyful</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-sad"      onclick="go('sad')"       data-name="sad"       data-mood="sad"><span class="mood-icon-big">😢</span><h3>Sad</h3><p>Emotional &amp; reflective</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-relaxed"  onclick="go('relaxed')"   data-name="relaxed"   data-mood="relaxed"><span class="mood-icon-big">😌</span><h3>Relaxed</h3><p>Calm &amp; peaceful</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-energy"   onclick="go('energetic')" data-name="energetic" data-mood="energetic"><span class="mood-icon-big">⚡</span><h3>Energetic</h3><p>High-energy beats</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-romantic" onclick="go('romantic')"  data-name="romantic"  data-mood="romantic"><span class="mood-icon-big">💕</span><h3>Romantic</h3><p>Love &amp; passion</p><span class="mood-pill">5 songs</span></button>
+      <button class="mood-card mc-focus"    onclick="go('focus')"     data-name="focus"     data-mood="focus"><span class="mood-icon-big">🎯</span><h3>Focus</h3><p>Deep concentration</p><span class="mood-pill">5 songs</span></button>
     </div>
   </section>
 </div>
@@ -159,7 +164,7 @@
      Each container below is populated entirely
      by loadPlaylist(mood) in tunes.js from
      SONGS_DATABASE — no hardcoded song rows.
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 
 <!-- HAPPY -->
 <div id="page-happy" class="page">
@@ -167,7 +172,7 @@
     <button class="back-btn" onclick="go('home')">← Back</button>
     <div class="pl-header">
       <div class="pl-cover" style="background:linear-gradient(145deg,#ff9a3c,#ff4d6d)">😊</div>
-      <div class="pl-meta"><h2>Happy Playlist</h2><p>Uplifting tunes to brighten your day</p><span class="pl-count">10 songs</span></div>
+      <div class="pl-meta"><h2>Happy Playlist</h2><p>Uplifting tunes to brighten your day</p><span class="pl-count">5 songs</span></div>
     </div>
     <div class="song-list" id="happy-song-list"></div>
   </section>
@@ -179,7 +184,7 @@
     <button class="back-btn" onclick="go('home')">← Back</button>
     <div class="pl-header">
       <div class="pl-cover" style="background:linear-gradient(145deg,#00b4d8,#0077b6)">😢</div>
-      <div class="pl-meta"><h2>Sad Playlist</h2><p>Emotional music to feel understood</p><span class="pl-count">10 songs</span></div>
+      <div class="pl-meta"><h2>Sad Playlist</h2><p>Emotional music to feel understood</p><span class="pl-count">5 songs</span></div>
     </div>
     <div class="song-list" id="sad-song-list"></div>
   </section>
@@ -191,7 +196,7 @@
     <button class="back-btn" onclick="go('home')">← Back</button>
     <div class="pl-header">
       <div class="pl-cover" style="background:linear-gradient(145deg,#06d6a0,#118ab2)">😌</div>
-      <div class="pl-meta"><h2>Relaxed Playlist</h2><p>Peaceful sounds to calm your mind</p><span class="pl-count">10 songs</span></div>
+      <div class="pl-meta"><h2>Relaxed Playlist</h2><p>Peaceful sounds to calm your mind</p><span class="pl-count">5 songs</span></div>
     </div>
     <div class="song-list" id="relaxed-song-list"></div>
   </section>
@@ -203,7 +208,7 @@
     <button class="back-btn" onclick="go('home')">← Back</button>
     <div class="pl-header">
       <div class="pl-cover" style="background:linear-gradient(145deg,#ffbe0b,#fb5607)">⚡</div>
-      <div class="pl-meta"><h2>Energetic Playlist</h2><p>High-tempo beats to fuel your fire</p><span class="pl-count">10 songs</span></div>
+      <div class="pl-meta"><h2>Energetic Playlist</h2><p>High-tempo beats to fuel your fire</p><span class="pl-count">5 songs</span></div>
     </div>
     <div class="song-list" id="energetic-song-list"></div>
   </section>
@@ -215,7 +220,7 @@
     <button class="back-btn" onclick="go('home')">← Back</button>
     <div class="pl-header">
       <div class="pl-cover" style="background:linear-gradient(145deg,#f72585,#b5179e)">💕</div>
-      <div class="pl-meta"><h2>Romantic Playlist</h2><p>Love songs for tender moments</p><span class="pl-count">10 songs</span></div>
+      <div class="pl-meta"><h2>Romantic Playlist</h2><p>Love songs for tender moments</p><span class="pl-count">5 songs</span></div>
     </div>
     <div class="song-list" id="romantic-song-list"></div>
   </section>
@@ -227,7 +232,7 @@
     <button class="back-btn" onclick="go('home')">← Back</button>
     <div class="pl-header">
       <div class="pl-cover" style="background:linear-gradient(145deg,#7b2ff7,#3a0ca3)">🎯</div>
-      <div class="pl-meta"><h2>Focus Playlist</h2><p>Deep work music for the zone</p><span class="pl-count">10 songs</span></div>
+      <div class="pl-meta"><h2>Focus Playlist</h2><p>Deep work music for the zone</p><span class="pl-count">5 songs</span></div>
     </div>
     <div class="song-list" id="focus-song-list"></div>
   </section>
@@ -239,7 +244,7 @@
      #exGrid is fully populated by renderExplore()
      in tunes.js from the entire SONGS_DATABASE —
      search + genre chips both filter live.
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div id="page-explore" class="page">
   <section class="wrap">
     <h2 class="sec-title">Explore <span class="gl">Music</span></h2>
@@ -272,7 +277,7 @@
      #chartList + the two sidebar lists are
      fully populated by renderCharts() in
      tunes.js — sorted live by real play counts.
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div id="page-charts" class="page">
   <section class="wrap">
     <h2 class="sec-title">🔥 Trending <span class="gc">Charts</span></h2>
@@ -302,7 +307,7 @@
      Recent History, the stat numbers and the
      Mood History badges/banner are all rendered
      live by renderProfile() in tunes.js.
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div id="page-profile" class="page">
   <div class="profile-hero">
     <div class="p-inner">
@@ -338,7 +343,7 @@
 <!-- ═══════════════════════════════════════════
      PAGE: FAVOURITES
      .song-row items added dynamically by tunes.js
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div id="page-favourites" class="page">
   <section class="wrap">
     <h2 class="sec-title">❤️ Your <span class="gc">Favourites</span></h2>
@@ -360,7 +365,7 @@
      PAGE: SETTINGS
      switchS() in tunes.js shows one panel,
      hides the rest by toggling display.
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div id="page-settings" class="page">
   <section class="wrap">
     <h2 class="sec-title">⚙️ <span class="gv">Settings</span></h2>
@@ -383,7 +388,16 @@
           <div class="fg"><label>Email</label><input type="email" value="aryan@example.com"></div>
           <div class="fg"><label>Bio</label><textarea rows="3">Music lover &amp; coder 🎵</textarea></div>
           <div class="fg"><label>Favourite Genre</label>
-            <select><option>Pop</option><option>Bollywood</option><option>Sufi</option><option>Hip-Hop</option><option>Lo-fi</option><option>Ambient</option><option>Indie</option><option>EDM</option></select>
+            <select>
+              <option>Pop</option>
+              <option>Bollywood</option>
+              <option>Sufi</option>
+              <option>Hip-Hop</option>
+              <option>Lo-fi</option>
+              <option>Ambient</option>
+              <option>Indie</option>
+              <option>EDM</option>
+            </select>
           </div>
           <button class="auth-btn" onclick="toast('✅ Profile saved!')">Save Changes</button>
         </div>
@@ -409,7 +423,14 @@
         <!-- Audio panel -->
         <div class="s-panel" id="sp-audio" style="display:none">
           <h3>Audio</h3><p class="sp-sub">Playback and quality settings</p>
-          <div class="s-row"><div class="s-lbl"><h4>Audio Quality</h4><p>Higher = more data usage</p></div><select style="background:rgba(255,255,255,.07);border:1px solid var(--bdr);border-radius:8px;padding:.48rem .85rem;color:var(--text);font-family:'Outfit',sans-serif" onchange="toast('🔊 Quality: '+this.value)"><option>Standard (128kbps)</option><option>High (256kbps)</option><option>Lossless</option></select></div>
+          <div class="s-row">
+            <div class="s-lbl"><h4>Audio Quality</h4><p>Higher = more data usage</p></div>
+            <select style="background:rgba(255,255,255,.07);border:1px solid var(--bdr);border-radius:8px;padding:.48rem .85rem;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif" onchange="toast('🔊 Quality: '+this.value)">
+              <option>Standard (128kbps)</option>
+              <option>High (256kbps)</option>
+              <option>Lossless</option>
+            </select>
+          </div>
           <div class="s-row"><div class="s-lbl"><h4>Crossfade</h4><p>Smooth transition between songs</p></div><label class="tog"><input type="checkbox" onchange="toast('🎚️ Crossfade toggled!')"><span class="tog-t"></span></label></div>
           <div class="s-row"><div class="s-lbl"><h4>Auto-play Next</h4><p>Keep the queue going</p></div><label class="tog"><input type="checkbox" checked onchange="toast('▶️ Auto-play toggled!')"><span class="tog-t"></span></label></div>
           <div class="s-row"><div class="s-lbl"><h4>Equaliser</h4><p>Boost bass, treble or vocals</p></div><label class="tog"><input type="checkbox" onchange="toast('🎛️ EQ toggled!')"><span class="tog-t"></span></label></div>
@@ -426,7 +447,10 @@
           <h3>Privacy</h3><p class="sp-sub">Control your data and visibility</p>
           <div class="s-row"><div class="s-lbl"><h4>Public Profile</h4><p>Others can see your mood history</p></div><label class="tog"><input type="checkbox" onchange="toast('👁️ Toggled!')"><span class="tog-t"></span></label></div>
           <div class="s-row"><div class="s-lbl"><h4>Share Activity</h4><p>Appear in trending charts</p></div><label class="tog"><input type="checkbox" checked onchange="toast('📡 Toggled!')"><span class="tog-t"></span></label></div>
-          <div class="s-row"><div class="s-lbl"><h4>Delete Account</h4><p>Permanently remove all data</p></div><button class="btn" style="background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.4);color:var(--coral);padding:.44rem 1rem;font-size:.81rem;border-radius:8px" onclick="toast('⚠️ Requires backend confirmation')">Delete</button></div>
+          <div class="s-row">
+            <div class="s-lbl"><h4>Delete Account</h4><p>Permanently remove all data</p></div>
+            <button class="btn" style="background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.4);color:var(--coral);padding:.44rem 1rem;font-size:.81rem;border-radius:8px" onclick="toast('⚠️ Requires backend confirmation')">Delete</button>
+          </div>
         </div>
       </div>
     </div>
@@ -436,7 +460,7 @@
 
 <!-- ═══════════════════════════════════════════
      AUTH PAGES
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div id="page-login" class="page">
   <div class="auth-wrap">
     <div class="auth-box">
@@ -479,7 +503,7 @@
 <!-- ═══════════════════════════════════════════
      NOW PLAYING BAR (always present in DOM)
      tunes.js adds .show/.playing to animate it
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <div class="npbar" id="npbar">
   <div class="np-disc" id="npDisc">🎵</div>
   <div class="np-info">
@@ -511,7 +535,7 @@
 
 <!-- ═══════════════════════════════════════════
      FOOTER
-═══════════════════════════════════════════ -->
+ ═══════════════════════════════════════════ -->
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">

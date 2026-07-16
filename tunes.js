@@ -1,43 +1,17 @@
 /* ══════════════════════════════════════════
-   tunes.js — MoodTunes JavaScript v2
-   Linked from tunes.html (before </body>)
+   tunes.js — Overhauled MoodTunes JS v3
+   Linked from index.html / tunes.html
    Styles live in tunes.css
-══════════════════════════════════════════ */
+ ══════════════════════════════════════════ */
 
 'use strict';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    0. SONGS DATABASE
-   ─────────────────────────────────────────
-   60 tracks — 10 per mood — mixing English
+   30 tracks — 5 per mood — mixing English
    Pop/Indie, Hindi Bollywood classics, Sufi,
-   Desi Hip-Hop and Lo-fi/Instrumental.
-
-   NOTE ON AUDIO: there is no free, key-less,
-   long-term-stable streaming CDN for licensed
-   commercial songs, and reusing a small pool of
-   generic demo MP3s across 60 titles meant many
-   completely different songs played the exact
-   same identical clip — which is why the audio
-   never matched the name on screen.
-
-   Fixed by giving every song its own procedural
-   "signature tune", generated live with the Web
-   Audio API and seeded from that song's own id +
-   title (see MOOD_SOUND / buildMelody / playSong
-   below). Same song → always the same recognisable
-   little melody, in a scale/tempo that matches its
-   mood (bright major scale for Happy, slow minor
-   for Sad, sparse drone for Focus, etc). Different
-   song → always a different melody. No network
-   dependency, no collisions, 100% consistent.
-
-   `url` / AUDIO_POOL are kept only as inert
-   metadata — swap them for a real licensed
-   streaming API (Spotify, JioSaavn, etc.) if you
-   wire up a backend later; nothing in the current
-   playback engine reads them.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   Desi Hip-Hop, Lo-fi and Instrumental.
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const AUDIO_POOL = [
   "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
   "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
@@ -58,8 +32,6 @@ const AUDIO_POOL = [
 ];
 const au = i => AUDIO_POOL[i % AUDIO_POOL.length];
 
-/* Shared metadata per mood — used by loadPlaylist, Explore cards,
-   Charts thumbnails and the Profile mood-history badges. */
 const MOOD_META = {
   happy:     { emoji: '😊', label: 'Happy',     grad: 'linear-gradient(145deg,#ff9a3c,#ff4d6d)', desc: 'Uplifting tunes to brighten your day',        badgeBg: 'rgba(255,154,60,.25)',  badgeBdr: 'rgba(255,154,60,.5)',  badgeText: '#ffb87a' },
   sad:       { emoji: '😢', label: 'Sad',       grad: 'linear-gradient(145deg,#00b4d8,#0077b6)', desc: 'Emotional music to feel understood',          badgeBg: 'rgba(0,180,216,.2)',    badgeBdr: 'rgba(0,180,216,.5)',   badgeText: '#80d4f0' },
@@ -71,20 +43,14 @@ const MOOD_META = {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    PER-SONG SIGNATURE TUNE ENGINE
-   ─────────────────────────────────────────
-   Every song gets its own short melodic loop,
-   generated deterministically from its id/title
-   so it's IDENTICAL every time that song plays,
-   and audibly different from every other song.
-   The scale, tempo and register are picked per
-   mood so a Focus track sounds calm/sparse and
-   an Energetic track sounds fast/bright, etc.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const SCALE_MAJOR      = [0, 2, 4, 5, 7, 9, 11, 12];   // bright / happy
-const SCALE_MINOR      = [0, 2, 3, 5, 7, 8, 10, 12];   // sad / moody
-const SCALE_PENTATONIC = [0, 2, 4, 7, 9, 12];          // relaxed / open
-const SCALE_HARM_MINOR = [0, 2, 3, 5, 7, 8, 11, 12];   // romantic / rich
-const SCALE_SPARSE     = [0, 5, 7, 12];                // focus / ambient
+   Deterministically synthesizes a unique track
+   so playback works completely offline and locally.
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+const SCALE_MAJOR      = [0, 2, 4, 5, 7, 9, 11, 12];   // happy
+const SCALE_MINOR      = [0, 2, 3, 5, 7, 8, 10, 12];   // sad
+const SCALE_PENTATONIC = [0, 2, 4, 7, 9, 12];          // relaxed
+const SCALE_HARM_MINOR = [0, 2, 3, 5, 7, 8, 11, 12];   // romantic
+const SCALE_SPARSE     = [0, 5, 7, 12];                // focus
 
 const MOOD_SOUND = {
   happy:     { scale: SCALE_MAJOR,      root: 294, tempo: .30, wave: 'triangle' },
@@ -95,8 +61,6 @@ const MOOD_SOUND = {
   focus:     { scale: SCALE_SPARSE,     root: 196, tempo: .90, wave: 'sine'     }
 };
 
-/* Small deterministic PRNG (mulberry32) — same seed always produces the
-   same sequence, which is exactly what makes each song's tune stable. */
 function mulberry32(seed) {
   return function () {
     seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
@@ -105,13 +69,13 @@ function mulberry32(seed) {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
+
 function hashString(str) {
   let h = 0;
   for (let i = 0; i < str.length; i++) { h = Math.imul(31, h) + str.charCodeAt(i) | 0; }
   return h >>> 0;
 }
 
-/* Builds (and caches) a note pattern + root-shift unique to one song. */
 const melodyCache = new Map();
 function buildMelody(song) {
   if (melodyCache.has(song.id)) return melodyCache.get(song.id);
@@ -133,8 +97,6 @@ function buildMelody(song) {
   return melody;
 }
 
-/* One shared AudioContext, reused (and resumed) across every play() call
-   instead of creating a new one each time. */
 let audioCtx = null;
 function getAudioCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -156,131 +118,85 @@ function playNote(ctx, freq, wave, noteDurationSec, volume) {
   osc.stop(ctx.currentTime + noteDurationSec + 0.05);
 }
 
-/* Baseline "lifetime" mood-visit counts, purely cosmetic seed data so the
-   Profile page never looks empty on a first-ever visit. Real session
-   activity (recorded below) is layered on top and re-rendered live. */
 const MOOD_SEED_COUNTS = { happy: 32, focus: 28, relaxed: 21, energetic: 18, romantic: 14, sad: 11 };
 
+/* Overhauled Multilingual Curated Songs Database (Exactly 5 per category) */
 const SONGS_DATABASE = [
   /* ───────── 😊 HAPPY ───────── */
-  { id: 1,  title: "Happy",                 artist: "Pharrell Williams",              emoji: "☀️", duration: "3:53", genre: "Pop",          mood: "happy", plays: 15200, url: au(0)  },
-  { id: 2,  title: "Uptown Funk",           artist: "Mark Ronson ft. Bruno Mars",      emoji: "🕺", duration: "4:30", genre: "Pop",          mood: "happy", plays: 14100, url: au(1)  },
-  { id: 3,  title: "Can't Stop the Feeling!", artist: "Justin Timberlake",             emoji: "🌈", duration: "3:56", genre: "Pop",          mood: "happy", plays: 12870, url: au(2)  },
-  { id: 4,  title: "Kar Har Maidaan Fateh",  artist: "Sukhwinder Singh & Shankar Mahadevan", emoji: "🏁", duration: "5:18", genre: "Bollywood", mood: "happy", plays: 11640, url: au(3)  },
-  { id: 5,  title: "Badtameez Dil",          artist: "Benny Dayal",                    emoji: "💃", duration: "4:09", genre: "Bollywood",    mood: "happy", plays: 10980, url: au(4)  },
-  { id: 6,  title: "London Thumakda",        artist: "Labh Janjua, Sonu Kakkar",       emoji: "🎉", duration: "3:16", genre: "Bollywood",    mood: "happy", plays: 9720,  url: au(5)  },
-  { id: 7,  title: "Nachde Ne Saare",        artist: "Jasleen Royal, Jaspreet Jasz",   emoji: "🎊", duration: "3:44", genre: "Bollywood",    mood: "happy", plays: 8460,  url: au(6)  },
-  { id: 8,  title: "Walking on Sunshine",    artist: "Katrina & The Waves",            emoji: "🌤️", duration: "3:58", genre: "Indie",        mood: "happy", plays: 7830,  url: au(7)  },
-  { id: 9,  title: "Balam Pichkari",         artist: "Vishal Dadlani, Shalmali Kholgade", emoji: "🎨", duration: "4:22", genre: "Bollywood", mood: "happy", plays: 6910,  url: au(8)  },
-  { id: 10, title: "Good Vibes Only",        artist: "Joy Collective",                 emoji: "✨", duration: "3:05", genre: "Lo-fi",        mood: "happy", plays: 5240,  url: au(9)  },
+  { id: 1, title: "Uptown Funk", artist: "Bruno Mars & Mark Ronson", emoji: "🕺", duration: "4:30", genre: "Pop", mood: "happy", plays: 15200, url: au(1) },
+  { id: 2, title: "Badtameez Dil", artist: "Benny Dayal", emoji: "💃", duration: "4:09", genre: "Bollywood", mood: "happy", plays: 14100, url: au(2) },
+  { id: 3, title: "Zingaat", artist: "Ajay-Atul", emoji: "🎉", duration: "3:45", genre: "Bollywood", mood: "happy", plays: 12870, url: au(3) },
+  { id: 4, title: "Can't Stop the Feeling!", artist: "Justin Timberlake", emoji: "🌈", duration: "3:56", genre: "Pop", mood: "happy", plays: 11640, url: au(4) },
+  { id: 5, title: "Kar Har Maidaan Fateh", artist: "Sukhwinder Singh", emoji: "🏁", duration: "5:18", genre: "Bollywood", mood: "happy", plays: 10980, url: au(5) },
 
   /* ───────── 😢 SAD ───────── */
-  { id: 11, title: "Channa Mereya",          artist: "Arijit Singh",                   emoji: "💔", duration: "4:50", genre: "Bollywood",    mood: "sad", plays: 14680, url: au(10) },
-  { id: 12, title: "Agar Tum Saath Ho",      artist: "Alka Yagnik, Arijit Singh",      emoji: "🥀", duration: "5:41", genre: "Bollywood",    mood: "sad", plays: 13210, url: au(11) },
-  { id: 13, title: "Tujhe Kitna Chahne Lage", artist: "Arijit Singh",                  emoji: "😔", duration: "4:22", genre: "Bollywood",    mood: "sad", plays: 12040, url: au(12) },
-  { id: 14, title: "Someone Like You",       artist: "Adele",                          emoji: "🌧️", duration: "4:45", genre: "Pop",          mood: "sad", plays: 11390, url: au(13) },
-  { id: 15, title: "Fix You",                artist: "Coldplay",                       emoji: "🕯️", duration: "4:55", genre: "Indie",        mood: "sad", plays: 9870,  url: au(14) },
-  { id: 16, title: "Kabira",                 artist: "Tochi Raina, Rekha Bhardwaj",    emoji: "🚪", duration: "3:50", genre: "Bollywood",    mood: "sad", plays: 8650,  url: au(15) },
-  { id: 17, title: "Judaai",                 artist: "Rahat Fateh Ali Khan",           emoji: "🌊", duration: "4:33", genre: "Sufi",         mood: "sad", plays: 7420,  url: au(0)  },
-  { id: 18, title: "Phir Le Aya Dil",        artist: "Rahat Fateh Ali Khan",           emoji: "😔", duration: "5:02", genre: "Sufi",         mood: "sad", plays: 6580,  url: au(1)  },
-  { id: 19, title: "All Too Well",           artist: "Taylor Swift",                   emoji: "🥺", duration: "5:29", genre: "Pop",          mood: "sad", plays: 5910,  url: au(2)  },
-  { id: 20, title: "Tum Hi Ho (Reprise)",    artist: "Arijit Singh",                   emoji: "💧", duration: "3:44", genre: "Bollywood",    mood: "sad", plays: 4870,  url: au(3)  },
+  { id: 6, title: "Channa Mereya", artist: "Arijit Singh", emoji: "💔", duration: "4:49", genre: "Bollywood", mood: "sad", plays: 14680, url: au(6) },
+  { id: 7, title: "Someone Like You", artist: "Adele", emoji: "🌧️", duration: "4:45", genre: "Pop", mood: "sad", plays: 13210, url: au(7) },
+  { id: 8, title: "Agar Tum Saath Ho", artist: "Alka Yagnik & Arijit Singh", emoji: "🥀", duration: "5:41", genre: "Bollywood", mood: "sad", plays: 12040, url: au(8) },
+  { id: 9, title: "Lovely", artist: "Billie Eilish ft. Khalid", emoji: "😔", duration: "3:20", genre: "Indie", mood: "sad", plays: 11390, url: au(9) },
+  { id: 10, title: "Kabira", artist: "Tochi Raina & Rekha Bhardwaj", emoji: "🚪", duration: "3:43", genre: "Bollywood", mood: "sad", plays: 9870, url: au(10) },
 
   /* ───────── 😌 RELAXED ───────── */
-  { id: 21, title: "Kun Faya Kun",           artist: "A.R. Rahman, Javed Ali, Mohit Chauhan", emoji: "🕌", duration: "7:50", genre: "Sufi", mood: "relaxed", plays: 13840, url: au(4) },
-  { id: 22, title: "Iktara",                 artist: "Kavita Seth, Amitabh Bhattacharya", emoji: "🎸", duration: "4:12", genre: "Bollywood", mood: "relaxed", plays: 12210, url: au(5) },
-  { id: 23, title: "Tum Se Hi",              artist: "Mohit Chauhan",                  emoji: "🌸", duration: "5:14", genre: "Bollywood",    mood: "relaxed", plays: 10630, url: au(6) },
-  { id: 24, title: "Weightless",             artist: "Marconi Union",                  emoji: "🌊", duration: "8:00", genre: "Ambient",      mood: "relaxed", plays: 9370,  url: au(7) },
-  { id: 25, title: "Sunset Lover",           artist: "Petit Biscuit",                  emoji: "🌅", duration: "4:03", genre: "Lo-fi",        mood: "relaxed", plays: 8140,  url: au(8) },
-  { id: 26, title: "Cornfield Chase",        artist: "Hans Zimmer",                    emoji: "🌾", duration: "4:20", genre: "Ambient",      mood: "relaxed", plays: 7260,  url: au(9) },
-  { id: 27, title: "Lofi Chill Beats",       artist: "Chillhop Music",                 emoji: "☕", duration: "3:30", genre: "Lo-fi",        mood: "relaxed", plays: 6480,  url: au(10) },
-  { id: 28, title: "Piya",                   artist: "Parineeti Chopra",               emoji: "🌺", duration: "3:47", genre: "Bollywood",    mood: "relaxed", plays: 5620,  url: au(11) },
-  { id: 29, title: "Rangi Saari",            artist: "Shreya Ghoshal, Ali Sethi",      emoji: "🕊️", duration: "5:05", genre: "Sufi",         mood: "relaxed", plays: 4980,  url: au(12) },
-  { id: 30, title: "Breathe Me",             artist: "Sia",                            emoji: "🍃", duration: "4:32", genre: "Indie",        mood: "relaxed", plays: 4110,  url: au(13) },
+  { id: 11, title: "Kun Faya Kun", artist: "A.R. Rahman, Javed Ali, Mohit Chauhan", emoji: "🕌", duration: "7:50", genre: "Sufi", mood: "relaxed", plays: 13840, url: au(11) },
+  { id: 12, title: "Iktara", artist: "Kavita Seth & Amitabh Bhattacharya", emoji: "🎸", duration: "4:12", genre: "Bollywood", mood: "relaxed", plays: 12210, url: au(12) },
+  { id: 13, title: "Strawberry Fields Forever", artist: "The Beatles", emoji: "🍓", duration: "4:07", genre: "Indie", mood: "relaxed", plays: 10630, url: au(13) },
+  { id: 14, title: "Sunset Lover", artist: "Petit Biscuit", emoji: "🌅", duration: "3:57", genre: "Lo-fi", mood: "relaxed", plays: 9370, url: au(14) },
+  { id: 15, title: "Rangi Saari", artist: "Kavita Seth & Kanishk Seth", emoji: "🕊️", duration: "3:53", genre: "Sufi", mood: "relaxed", plays: 8140, url: au(15) },
 
   /* ───────── ⚡ ENERGETIC ───────── */
-  { id: 31, title: "Blinding Lights",        artist: "The Weeknd",                     emoji: "💥", duration: "3:20", genre: "Pop",          mood: "energetic", plays: 15980, url: au(14) },
-  { id: 32, title: "Apna Time Aayega",       artist: "Ranveer Singh, DIVINE",          emoji: "🎤", duration: "3:24", genre: "Desi Hip-Hop", mood: "energetic", plays: 14320, url: au(15) },
-  { id: 33, title: "Thunder",                artist: "Imagine Dragons",                emoji: "⛈️", duration: "3:07", genre: "Rock",         mood: "energetic", plays: 13110, url: au(0) },
-  { id: 34, title: "Malhari",                artist: "Vishal Dadlani",                 emoji: "🔥", duration: "3:36", genre: "Bollywood",    mood: "energetic", plays: 12040, url: au(1) },
-  { id: 35, title: "Sher Aaya Sher",         artist: "Vishal Dadlani, Raftaar",        emoji: "🦁", duration: "3:12", genre: "Desi Hip-Hop", mood: "energetic", plays: 10870, url: au(2) },
-  { id: 36, title: "Levels",                 artist: "Avicii",                         emoji: "🎛️", duration: "3:19", genre: "EDM",          mood: "energetic", plays: 9640,  url: au(3) },
-  { id: 37, title: "Titanium",               artist: "David Guetta ft. Sia",           emoji: "🚀", duration: "4:05", genre: "EDM",          mood: "energetic", plays: 8520,  url: au(4) },
-  { id: 38, title: "Zinda",                  artist: "Siddharth Mahadevan",            emoji: "💪", duration: "3:50", genre: "Bollywood",    mood: "energetic", plays: 7390,  url: au(5) },
-  { id: 39, title: "Kar Gayi Chull",         artist: "Badshah, Fazilpuria",            emoji: "🕺", duration: "3:33", genre: "Desi Hip-Hop", mood: "energetic", plays: 6280,  url: au(6) },
-  { id: 40, title: "Chaiyya Chaiyya",        artist: "Sukhwinder Singh, Sapna Awasthi", emoji: "🚂", duration: "6:52", genre: "Bollywood",   mood: "energetic", plays: 5140,  url: au(7) },
+  { id: 16, title: "Blinding Lights", artist: "The Weeknd", emoji: "💥", duration: "3:20", genre: "Pop", mood: "energetic", plays: 15980, url: au(0) },
+  { id: 17, title: "Apna Time Aayega", artist: "Ranveer Singh & DIVINE", emoji: "🎤", duration: "3:24", genre: "Desi Hip-Hop", mood: "energetic", plays: 14320, url: au(1) },
+  { id: 18, title: "Malhari", artist: "Vishal Dadlani", emoji: "🔥", duration: "3:36", genre: "Bollywood", mood: "energetic", plays: 13110, url: au(2) },
+  { id: 19, title: "Machayenge", artist: "Emiway Bantai", emoji: "⚡", duration: "2:55", genre: "Desi Hip-Hop", mood: "energetic", plays: 12040, url: au(3) },
+  { id: 20, title: "Levels", artist: "Avicii", emoji: "🎛️", duration: "3:19", genre: "EDM", mood: "energetic", plays: 10870, url: au(4) },
 
   /* ───────── 💕 ROMANTIC ───────── */
-  { id: 41, title: "Tum Hi Ho",              artist: "Arijit Singh",                   emoji: "🌹", duration: "4:22", genre: "Bollywood",    mood: "romantic", plays: 16240, url: au(8) },
-  { id: 42, title: "Perfect",                artist: "Ed Sheeran",                     emoji: "💍", duration: "4:23", genre: "Pop",          mood: "romantic", plays: 15010, url: au(9) },
-  { id: 43, title: "Raabta",                 artist: "Arijit Singh",                   emoji: "💫", duration: "4:16", genre: "Bollywood",    mood: "romantic", plays: 13560, url: au(10) },
-  { id: 44, title: "Tera Ban Jaunga",        artist: "Akhil Sachdeva, Tulsi Kumar",    emoji: "💗", duration: "3:52", genre: "Bollywood",    mood: "romantic", plays: 12280, url: au(11) },
-  { id: 45, title: "All of Me",              artist: "John Legend",                    emoji: "❤️", duration: "4:29", genre: "Pop",          mood: "romantic", plays: 11090, url: au(12) },
-  { id: 46, title: "Señorita",               artist: "Shawn Mendes, Camila Cabello",   emoji: "💋", duration: "3:11", genre: "Pop",          mood: "romantic", plays: 9840,  url: au(13) },
-  { id: 47, title: "Ae Dil Hai Mushkil",     artist: "Arijit Singh",                   emoji: "🌙", duration: "4:29", genre: "Bollywood",    mood: "romantic", plays: 8620,  url: au(14) },
-  { id: 48, title: "Tum Mile",               artist: "Neeraj Shridhar",                emoji: "👫", duration: "5:20", genre: "Bollywood",    mood: "romantic", plays: 7350,  url: au(15) },
-  { id: 49, title: "Mere Rashke Qamar",      artist: "Rahat Fateh Ali Khan",           emoji: "🌹", duration: "5:41", genre: "Sufi",         mood: "romantic", plays: 6120,  url: au(0) },
-  { id: 50, title: "Thinking Out Loud",      artist: "Ed Sheeran",                     emoji: "💞", duration: "4:41", genre: "Pop",          mood: "romantic", plays: 4980,  url: au(1) },
+  { id: 21, title: "Perfect", artist: "Ed Sheeran", emoji: "💍", duration: "4:23", genre: "Pop", mood: "romantic", plays: 16240, url: au(5) },
+  { id: 22, title: "Tum Hi Ho", artist: "Arijit Singh", emoji: "🌹", duration: "4:22", genre: "Bollywood", mood: "romantic", plays: 15010, url: au(6) },
+  { id: 23, title: "Raabta", artist: "Arijit Singh & Shreya Ghoshal", emoji: "💫", duration: "4:03", genre: "Bollywood", mood: "romantic", plays: 13560, url: au(7) },
+  { id: 24, title: "All of Me", artist: "John Legend", emoji: "❤️", duration: "4:29", genre: "Pop", mood: "romantic", plays: 12280, url: au(8) },
+  { id: 25, title: "Kesariya", artist: "Arijit Singh", emoji: "🍁", duration: "4:28", genre: "Bollywood", mood: "romantic", plays: 11090, url: au(9) },
 
   /* ───────── 🎯 FOCUS ───────── */
-  { id: 51, title: "Deep Focus",             artist: "Study Beats",                    emoji: "🧠", duration: "4:45", genre: "Ambient",      mood: "focus", plays: 12760, url: au(2) },
-  { id: 52, title: "Flow State",             artist: "Productivity Pro",               emoji: "📖", duration: "5:10", genre: "Lo-fi",        mood: "focus", plays: 11340, url: au(3) },
-  { id: 53, title: "Time",                   artist: "Hans Zimmer",                    emoji: "⏳", duration: "4:35", genre: "Instrumental", mood: "focus", plays: 10280, url: au(4) },
-  { id: 54, title: "River Flows in You",     artist: "Yiruma",                         emoji: "🎹", duration: "3:12", genre: "Instrumental", mood: "focus", plays: 9160,  url: au(5) },
-  { id: 55, title: "Experience",             artist: "Ludovico Einaudi",               emoji: "🎼", duration: "5:23", genre: "Instrumental", mood: "focus", plays: 8040,  url: au(6) },
-  { id: 56, title: "Lofi Study Beats",       artist: "Chillhop Essentials",            emoji: "📚", duration: "3:45", genre: "Lo-fi",        mood: "focus", plays: 7220,  url: au(7) },
-  { id: 57, title: "Divenire",               artist: "Ludovico Einaudi",               emoji: "🌌", duration: "6:35", genre: "Instrumental", mood: "focus", plays: 6390,  url: au(8) },
-  { id: 58, title: "Intro",                  artist: "The xx",                         emoji: "🎧", duration: "2:07", genre: "Indie",        mood: "focus", plays: 5580,  url: au(9) },
-  { id: 59, title: "Nuvole Bianche",         artist: "Ludovico Einaudi",               emoji: "☁️", duration: "5:58", genre: "Instrumental", mood: "focus", plays: 4720,  url: au(10) },
-  { id: 60, title: "Brain Power",            artist: "Mind Matrix",                    emoji: "⚙️", duration: "4:55", genre: "Ambient",      mood: "focus", plays: 3910,  url: au(11) }
+  { id: 26, title: "Time", artist: "Hans Zimmer", emoji: "⏳", duration: "4:35", genre: "Ambient", mood: "focus", plays: 12760, url: au(10) },
+  { id: 27, title: "River Flows in You", artist: "Yiruma", emoji: "🎹", duration: "3:08", genre: "Instrumental", mood: "focus", plays: 11340, url: au(11) },
+  { id: 28, title: "Experience", artist: "Ludovico Einaudi", emoji: "🎼", duration: "5:15", genre: "Instrumental", mood: "focus", plays: 10280, url: au(12) },
+  { id: 29, title: "Lofi Study Beats", artist: "Chillhop Essentials", emoji: "📚", duration: "3:45", genre: "Lo-fi", mood: "focus", plays: 9160, url: au(13) },
+  { id: 30, title: "Intro", artist: "The xx", emoji: "🎧", duration: "2:08", genre: "Indie", mood: "focus", plays: 8040, url: au(14) }
 ];
 
-/* Genre string → explore-filter key. Groups similar sub-genres together
-   so the filter chips stay compact (see filter-row in the HTML). */
 const GENRE_FILTER_MAP = {
-  'Pop': 'pop', 'Funk': 'pop', 'Dance': 'pop',
-  'Indie': 'indie',
+  'Pop': 'pop',
   'Bollywood': 'bollywood',
   'Sufi': 'sufi',
-  'Desi Hip-Hop': 'hiphop', 'Hip-Hop': 'hiphop',
+  'Desi Hip-Hop': 'hiphop',
   'EDM': 'edm',
   'Lo-fi': 'lofi',
   'Ambient': 'ambient', 'Instrumental': 'ambient',
-  'Rock': 'rock',
-  'Soul': 'rb', 'R&B': 'rb'
+  'Indie': 'indie'
 };
 const normGenre = g => GENRE_FILTER_MAP[g] || g.toLowerCase().replace(/[^a-z]/g, '');
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    1. PAGE ROUTER
-   ─────────────────────────────────────────
-   CONCEPT: Single-Page Application (SPA)
-   All pages exist in the HTML at once but are
-   hidden (display:none). The go() function
-   instantly swaps which one is visible, and
-   triggers the right dynamic renderer for
-   pages whose content comes from JS.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let currentPage = null;
 const MOOD_NAMES = Object.keys(MOOD_META);
 
 function go(name) {
-  /* Step 1 — hide previous page */
   if (currentPage) {
     const prev = document.getElementById('page-' + currentPage);
     if (prev) prev.classList.remove('active', 'page-enter');
   }
 
-  /* Step 2 — instant scroll to top (not smooth) */
   window.scrollTo(0, 0);
 
-  /* Step 3 — show new page */
   const next = document.getElementById('page-' + name);
   if (!next) return;
   next.classList.add('active');
 
-  /* Step 3b — populate dynamic pages from SONGS_DATABASE */
+  /* Dynamic mapping of content on page load */
   if (MOOD_NAMES.includes(name)) {
     loadPlaylist(name);
   } else if (name === 'explore') {
@@ -293,9 +209,8 @@ function go(name) {
     renderFavList();
   }
 
-  next.classList.remove('page-enter'); // reset if revisiting
+  next.classList.remove('page-enter');
 
-  /* Step 4 — double rAF so CSS animation fires after paint */
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       next.classList.add('page-enter');
@@ -304,14 +219,12 @@ function go(name) {
 
   currentPage = name;
 
-  /* Step 5 — highlight correct nav button + close mobile menu */
   document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('nav-active'));
   const nb = document.getElementById('nb-' + name);
   if (nb) nb.classList.add('nav-active');
   closeMobileNav();
 }
 
-/* Mobile hamburger menu */
 function toggleMobileNav() {
   document.querySelector('.nav-burger')?.classList.toggle('open');
   document.querySelector('.nav-links')?.classList.toggle('open');
@@ -321,7 +234,6 @@ function closeMobileNav() {
   document.querySelector('.nav-links')?.classList.remove('open');
 }
 
-/* Boot: show home page as soon as HTML is ready */
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', boot);
 } else {
@@ -329,7 +241,6 @@ if (document.readyState === 'loading') {
 }
 
 function boot() {
-  /* Restore a previously saved accent colour, if any */
   const savedAccent = localStorage.getItem('mt-accent');
   if (savedAccent) {
     document.documentElement.style.setProperty('--violet', savedAccent);
@@ -341,8 +252,6 @@ function boot() {
   go('home');
 }
 
-/* Keeps the "N songs" pill on every mood card honest — reads the real
-   count from SONGS_DATABASE instead of a hardcoded "5 songs" string. */
 function updateMoodPillCounts() {
   document.querySelectorAll('[data-mood]').forEach(card => {
     const mood = card.dataset.mood;
@@ -355,9 +264,8 @@ function updateMoodPillCounts() {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    2. TOAST NOTIFICATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let toastTimer;
-
 function toast(msg) {
   clearTimeout(toastTimer);
   document.getElementById('tmsg').textContent = msg;
@@ -369,21 +277,8 @@ function toast(msg) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   3. NOW PLAYING BAR (PER-SONG SIGNATURE-TUNE ENGINE)
-   ─────────────────────────────────────────
-   playSong() drives two independent timers:
-     • ticker      — fires once a second, drives
-                     elapsed time / the progress
-                     bar, and advances the queue
-                     when the song "ends".
-     • melodyTimer — fires at that song's own
-                     tempo and plays the next note
-                     of its deterministic pattern
-                     from buildMelody(). Same song
-                     id → same pattern, every time.
-   Nothing here depends on the network, so it can
-   never mismatch, stall, or 404.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   3. NOW PLAYING BAR (AUDIO SYNTHESIS ENGINE)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let isPlaying   = false;
 let elapsed     = 0;
 let total       = 0;
@@ -392,9 +287,6 @@ let melodyTimer = null;
 let currentVolume = 0.8;
 let currentSong = null;
 
-/* Playback queue — set whenever a mood playlist, Explore, or the
-   Favourites list starts playing, so ⏮ / ⏭ step through the same
-   set of songs the user was browsing rather than the raw DB order. */
 let currentQueue = SONGS_DATABASE.slice();
 let currentIndex = -1;
 
@@ -403,9 +295,6 @@ const fmt = s => {
   return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 };
 
-/* playTrack() is the entry point used by every dynamically-rendered
-   row/card (playlists, Explore, Charts, Favourites). It updates the
-   queue + history bookkeeping, then hands off to playSong(). */
 function playTrack(song, queue) {
   if (queue && queue.length) currentQueue = queue;
   currentIndex = currentQueue.findIndex(s => s.id === song.id);
@@ -451,8 +340,6 @@ function playSong(song) {
   toast('🎵 Now playing: ' + song.title);
 }
 
-/* Schedules this song's own deterministic note pattern, one note per
-   "tempo" seconds, for as long as it's the current track. */
 function startMelody(song) {
   clearInterval(melodyTimer);
   const { pattern, rootShift, cfg } = buildMelody(song);
@@ -504,8 +391,6 @@ function closePlayer() {
   document.getElementById('npbar').classList.remove('show', 'playing');
 }
 
-/* Smart Queue System — steps through currentQueue (the mood/Explore/
-   Favourites list currently being browsed), wrapping around at the ends. */
 function nextTrack() {
   if (!currentQueue.length) { toast('⏭ No more songs in the queue!'); return; }
   currentIndex = (currentIndex + 1) % currentQueue.length;
@@ -529,13 +414,7 @@ function prevTrack() {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    4. FAVOURITES
-   ─────────────────────────────────────────
-   favMap: Map<songId, songObject>. Keying by
-   the numeric id (rather than title) avoids
-   collisions and lets every card/row share one
-   source of truth for its heart state via the
-   data-song-id attribute + syncFavButtons().
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const favMap = new Map();
 
 function toggleFav(song, btnEl) {
@@ -578,12 +457,8 @@ function renderFavList() {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   SHARED ROW / CARD BUILDERS
-   ─────────────────────────────────────────
-   One function builds a song-row for playlists
-   AND Favourites so the markup, fav-button
-   wiring and queue logic never drift apart.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   SHARED DOM COMPONENT BUILDERS
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function buildSongRow(song, displayIndex, queue) {
   const row = document.createElement('div');
   row.className = 'song-row';
@@ -643,8 +518,8 @@ const durationToSeconds = dur => {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   5. MOOD SEARCH FILTER (Moods page)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   5. MOOD SEARCH FILTER (Moods Page)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function filterMoods(q) {
   const lq = q.toLowerCase().trim();
   document.querySelectorAll('#moodGrid .mood-card').forEach(card => {
@@ -655,14 +530,8 @@ function filterMoods(q) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   6. EXPLORE — dynamic grid + filters + search
-   ─────────────────────────────────────────
-   renderExplore() rebuilds the ENTIRE #exGrid
-   from SONGS_DATABASE (every mood, every
-   language/genre) instead of relying on
-   hardcoded HTML cards. Genre chips + the
-   search box both filter what's on screen.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   6. EXPLORE PAGE (Search + Filter Chips)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let activeGenre = 'all';
 let exploreRendered = false;
 
@@ -711,7 +580,7 @@ function filterExplore(q) {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    7. SETTINGS PANEL SWITCHER
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const S_PANELS = ['account', 'appear', 'audio', 'notifs', 'privacy'];
 
 function switchS(id, el) {
@@ -729,15 +598,7 @@ function switchS(id, el) {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    8. ACCENT COLOUR PICKER
-   ─────────────────────────────────────────
-   Setting --violet on <html> instantly
-   recolours every element in tunes.css that
-   references var(--violet) or the --glow /
-   --glow-soft helpers derived from it (nav
-   CTA, buttons, focus rings, scrollbars, the
-   now-playing bar's pulse glow, sliders, etc).
-   The choice is remembered in localStorage.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function setAccent(col, el) {
   document.documentElement.style.setProperty('--violet', col);
   document.querySelectorAll('.theme-opt').forEach(o => o.classList.remove('on'));
@@ -748,8 +609,8 @@ function setAccent(col, el) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   9. DYNAMIC PLAYLIST RENDERER (per-mood pages)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   9. DYNAMIC PLAYLIST RENDERER (Per-Mood Pages)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function loadPlaylist(moodName) {
   const filteredSongs = SONGS_DATABASE.filter(song => song.mood === moodName);
   const listContainer = document.getElementById(`${moodName}-song-list`);
@@ -766,7 +627,6 @@ function loadPlaylist(moodName) {
     listContainer.appendChild(buildSongRow(song, index + 1, filteredSongs));
   });
 
-  // Keep the "N songs · M min" pill honest now that the DB has grown
   const totalSeconds = filteredSongs.reduce((sum, s) => sum + durationToSeconds(s.duration), 0);
   const countEl = document.querySelector(`#page-${moodName} .pl-count`);
   if (countEl) countEl.textContent = `${filteredSongs.length} songs · ${Math.round(totalSeconds / 60)} min`;
@@ -774,20 +634,13 @@ function loadPlaylist(moodName) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   10. TRENDING CHARTS — fully dynamic
-   ─────────────────────────────────────────
-   Top 10 by play count, plus a mood-popularity
-   and top-genres sidebar, all computed live
-   from SONGS_DATABASE rather than hardcoded
-   HTML rows.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   10. TRENDING CHARTS (Live Database Calculations)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function formatPlays(n) {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
   return String(n);
 }
 
-/* Deterministic little "trend" indicator so charts feel alive without
-   relying on Math.random() (keeps re-renders from jittering). */
 function trendMarkup(song) {
   const mod = song.id % 4;
   if (mod === 0) return `<div class="tu">▲${(song.id % 5) + 1}</div>`;
@@ -820,12 +673,10 @@ function renderCharts() {
     });
   }
 
-  // Sidebar: mood popularity (share of total plays per mood)
   const moodTotals = {};
   SONGS_DATABASE.forEach(s => { moodTotals[s.mood] = (moodTotals[s.mood] || 0) + s.plays; });
   renderBarList('moodPopList', moodTotals, key => MOOD_META[key]?.label || key);
 
-  // Sidebar: top genres
   const genreTotals = {};
   SONGS_DATABASE.forEach(s => { genreTotals[s.genre] = (genreTotals[s.genre] || 0) + s.plays; });
   renderBarList('genrePopList', genreTotals, key => key, true);
@@ -850,16 +701,8 @@ function renderBarList(containerId, counts, labelFor, hidePct) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   11. PROFILE — dynamic history, stats & mood chart
-   ─────────────────────────────────────────
-   playHistory: songs played THIS session, most
-   recent first — feeds "Recent History".
-   totalPlaysCount / exploredMoodsSet / mood
-   tallies feed the header stats and the mood
-   badges, layered on top of small cosmetic
-   seed numbers so the page never looks broken
-   on a fresh visit.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   11. PROFILE (Session Stats + Recent History)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let playHistory = [];
 let totalPlaysCount = 0;
 const exploredMoodsSet = new Set();
@@ -945,7 +788,7 @@ function renderMoodHistory() {
   if (banner && combined.length) {
     const top = combined[0];
     const m = MOOD_META[top.mood];
-    const totalMinutes = Math.round(top.count * 3.2); // rough avg session length for flavour text
+    const totalMinutes = Math.round(top.count * 3.2); // rough avg duration
     banner.innerHTML = `
       <span style="font-size:2rem">${m.emoji}</span>
       <div><div style="font-weight:700;font-size:.95rem">${m.label}</div>
@@ -957,8 +800,8 @@ function renderMoodHistory() {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   12. VOICE SEARCH — 10-second timeout window
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   12. VOICE SEARCH (10s Countdown Timeout)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let voiceTimeout = null;
 
 function startVoiceSearch() {
@@ -1016,8 +859,8 @@ function startVoiceSearch() {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   13. AI MOOD DETECTOR (rule-based sentiment analysis)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+   13. AI MOOD DETECTOR (Sentiment Analysis)
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function detectMoodWithAI() {
   const promptInput = document.getElementById('aiPrompt');
   const text = promptInput.value.toLowerCase().trim();
