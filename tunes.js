@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   tunes.js — Clean External Streaming v7
+   tunes.js — Clean External Streaming v8
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
@@ -185,7 +185,10 @@ const fmt = s => {
 
 function initAudio() {
   currentAudio = document.getElementById('mainAudio');
-  if (!currentAudio) return;
+  if (!currentAudio) {
+    console.warn("mainAudio element not found in DOM. Creating programmatic Audio fallback.");
+    currentAudio = new Audio();
+  }
 
   currentAudio.volume = currentVolume;
 
@@ -204,9 +207,15 @@ function initAudio() {
   });
 
   currentAudio.addEventListener('error', () => {
-    console.error("HTML5 Audio loading error:", currentAudio.error);
-    toast("❌ This song failed to stream. Loading next song...");
-    setTimeout(nextTrack, 2000);
+    const err = currentAudio.error;
+    if (err && err.code === 1) {
+      // Interrupted by changing tracks (MEDIA_ERR_ABORTED). Ignore this safely.
+      console.log("Audio loading aborted (switching songs).");
+      return;
+    }
+    console.error("HTML5 Audio loading error:", err);
+    toast("❌ Song failed to load. Trying next track...");
+    setTimeout(nextTrack, 1500);
   });
 }
 
@@ -247,9 +256,14 @@ function playSong(song) {
     currentAudio.src = song.url;
     currentAudio.load();
     currentAudio.play().catch(err => {
+      if (err.name === 'AbortError') {
+        // Ignored safely as it represents a new track selection interrupting this one.
+        console.log("Playback interrupted by another request (AbortError).");
+        return;
+      }
       console.warn("Autoplay block or loading error:", err);
-      toast("❌ Stream failed. Playing next song...");
-      setTimeout(nextTrack, 2000);
+      toast("❌ Song failed to play. Trying next...");
+      setTimeout(nextTrack, 1500);
     });
   }
 
@@ -272,9 +286,10 @@ function togglePlay() {
   if (currentAudio) {
     if (isPlaying) {
       currentAudio.play().catch(e => {
+        if (e.name === 'AbortError') return;
         console.warn(e);
-        toast("❌ Playback failed. Playing next...");
-        setTimeout(nextTrack, 2000);
+        toast("❌ Playback failed. Trying next...");
+        setTimeout(nextTrack, 1500);
       });
     } else {
       currentAudio.pause();
