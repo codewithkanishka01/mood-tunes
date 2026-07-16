@@ -1,5 +1,5 @@
 /* ══════════════════════════════════════════
-   tunes.js — Overhauled MoodTunes JS v3
+   tunes.js — Spotify Redesign Logic v4
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
@@ -43,14 +43,12 @@ const MOOD_META = {
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    PER-SONG SIGNATURE TUNE ENGINE
-   Deterministically synthesizes a unique track
-   so playback works completely offline and locally.
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const SCALE_MAJOR      = [0, 2, 4, 5, 7, 9, 11, 12];   // happy
-const SCALE_MINOR      = [0, 2, 3, 5, 7, 8, 10, 12];   // sad
-const SCALE_PENTATONIC = [0, 2, 4, 7, 9, 12];          // relaxed
-const SCALE_HARM_MINOR = [0, 2, 3, 5, 7, 8, 11, 12];   // romantic
-const SCALE_SPARSE     = [0, 5, 7, 12];                // focus
+const SCALE_MAJOR      = [0, 2, 4, 5, 7, 9, 11, 12];
+const SCALE_MINOR      = [0, 2, 3, 5, 7, 8, 10, 12];
+const SCALE_PENTATONIC = [0, 2, 4, 7, 9, 12];
+const SCALE_HARM_MINOR = [0, 2, 3, 5, 7, 8, 11, 12];
+const SCALE_SPARSE     = [0, 5, 7, 12];
 
 const MOOD_SOUND = {
   happy:     { scale: SCALE_MAJOR,      root: 294, tempo: .30, wave: 'triangle' },
@@ -82,7 +80,7 @@ function buildMelody(song) {
 
   const cfg  = MOOD_SOUND[song.mood] || MOOD_SOUND.focus;
   const rand = mulberry32(song.id * 9973 + hashString(song.title));
-  const len  = 8 + Math.floor(rand() * 5); // 8–12 notes per loop
+  const len  = 8 + Math.floor(rand() * 5);
 
   const pattern = [];
   for (let i = 0; i < len; i++) {
@@ -90,7 +88,7 @@ function buildMelody(song) {
     const octaveUp = rand() < 0.15 ? 12 : 0;
     pattern.push(degree + octaveUp);
   }
-  const rootShift = Math.floor(rand() * 4) * 2; // small per-song key variance
+  const rootShift = Math.floor(rand() * 4) * 2;
 
   const melody = { pattern, rootShift, cfg };
   melodyCache.set(song.id, melody);
@@ -120,7 +118,7 @@ function playNote(ctx, freq, wave, noteDurationSec, volume) {
 
 const MOOD_SEED_COUNTS = { happy: 32, focus: 28, relaxed: 21, energetic: 18, romantic: 14, sad: 11 };
 
-/* Overhauled Multilingual Curated Songs Database (Exactly 5 per category) */
+/* Overhauled Multilingual Curated Songs Database */
 const SONGS_DATABASE = [
   /* ───────── 😊 HAPPY ───────── */
   { id: 1, title: "Uptown Funk", artist: "Bruno Mars & Mark Ronson", emoji: "🕺", duration: "4:30", genre: "Pop", mood: "happy", plays: 15200, url: au(1) },
@@ -190,13 +188,13 @@ function go(name) {
     if (prev) prev.classList.remove('active', 'page-enter');
   }
 
-  window.scrollTo(0, 0);
+  // Scroll main content pane to top
+  document.querySelector('.content-viewport')?.scrollTo(0, 0);
 
   const next = document.getElementById('page-' + name);
   if (!next) return;
   next.classList.add('active');
 
-  /* Dynamic mapping of content on page load */
   if (MOOD_NAMES.includes(name)) {
     loadPlaylist(name);
   } else if (name === 'explore') {
@@ -219,19 +217,12 @@ function go(name) {
 
   currentPage = name;
 
-  document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('nav-active'));
-  const nb = document.getElementById('nb-' + name);
-  if (nb) nb.classList.add('nav-active');
-  closeMobileNav();
-}
-
-function toggleMobileNav() {
-  document.querySelector('.nav-burger')?.classList.toggle('open');
-  document.querySelector('.nav-links')?.classList.toggle('open');
-}
-function closeMobileNav() {
-  document.querySelector('.nav-burger')?.classList.remove('open');
-  document.querySelector('.nav-links')?.classList.remove('open');
+  /* Highlight correct nav button in sidebar + mobile navigation */
+  document.querySelectorAll('.sidebar-links button, .mobile-nav button').forEach(b => b.classList.remove('nav-active'));
+  const sb = document.getElementById('sb-' + name);
+  if (sb) sb.classList.add('nav-active');
+  const mb = document.getElementById('mb-' + name);
+  if (mb) mb.classList.add('nav-active');
 }
 
 if (document.readyState === 'loading') {
@@ -249,6 +240,7 @@ function boot() {
     });
   }
   updateMoodPillCounts();
+  renderSidebarFavs();
   go('home');
 }
 
@@ -413,7 +405,7 @@ function prevTrack() {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   4. FAVOURITES
+   4. FAVOURITES (Including Sidebar library mapping)
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 const favMap = new Map();
 
@@ -427,6 +419,7 @@ function toggleFav(song, btnEl) {
     toast('❤️ Added to favourites: ' + song.title);
   }
   syncFavButtons(song.id, !isOn);
+  renderSidebarFavs();
   if (currentPage === 'favourites') renderFavList();
   if (currentPage === 'profile') renderProfileStats();
 }
@@ -453,6 +446,33 @@ function renderFavList() {
 
   const favSongs = Array.from(favMap.values());
   favSongs.forEach((song, i) => list.appendChild(buildSongRow(song, i + 1, favSongs)));
+}
+
+/* Sidebar Favorite library list renderer */
+function renderSidebarFavs() {
+  const list = document.getElementById('sidebarFavList');
+  if (!list) return;
+  list.innerHTML = '';
+
+  if (favMap.size === 0) {
+    list.innerHTML = `<div class="lib-empty">Heart some tracks to build your library!</div>`;
+    return;
+  }
+
+  const favSongs = Array.from(favMap.values());
+  favSongs.forEach(song => {
+    const item = document.createElement('div');
+    item.className = 'lib-item';
+    item.onclick = () => playTrack(song, favSongs);
+    item.innerHTML = `
+      <div class="lib-thumb">${song.emoji}</div>
+      <div class="lib-info">
+        <div class="lib-title">${song.title}</div>
+        <div class="lib-artist">${song.artist}</div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
 }
 
 
@@ -518,7 +538,7 @@ const durationToSeconds = dur => {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   5. MOOD SEARCH FILTER (Moods Page)
+   5. MOOD SEARCH FILTER
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function filterMoods(q) {
   const lq = q.toLowerCase().trim();
@@ -530,7 +550,7 @@ function filterMoods(q) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   6. EXPLORE PAGE (Search + Filter Chips)
+   6. EXPLORE PAGE
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let activeGenre = 'all';
 let exploreRendered = false;
@@ -609,7 +629,7 @@ function setAccent(col, el) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   9. DYNAMIC PLAYLIST RENDERER (Per-Mood Pages)
+   9. DYNAMIC PLAYLIST RENDERER
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function loadPlaylist(moodName) {
   const filteredSongs = SONGS_DATABASE.filter(song => song.mood === moodName);
@@ -634,7 +654,7 @@ function loadPlaylist(moodName) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   10. TRENDING CHARTS (Live Database Calculations)
+   10. TRENDING CHARTS
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function formatPlays(n) {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
@@ -701,7 +721,7 @@ function renderBarList(containerId, counts, labelFor, hidePct) {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   11. PROFILE (Session Stats + Recent History)
+   11. PROFILE
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let playHistory = [];
 let totalPlaysCount = 0;
@@ -788,7 +808,7 @@ function renderMoodHistory() {
   if (banner && combined.length) {
     const top = combined[0];
     const m = MOOD_META[top.mood];
-    const totalMinutes = Math.round(top.count * 3.2); // rough avg duration
+    const totalMinutes = Math.round(top.count * 3.2);
     banner.innerHTML = `
       <span style="font-size:2rem">${m.emoji}</span>
       <div><div style="font-weight:700;font-size:.95rem">${m.label}</div>
@@ -800,7 +820,7 @@ function renderMoodHistory() {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   12. VOICE SEARCH (10s Countdown Timeout)
+   12. VOICE SEARCH
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 let voiceTimeout = null;
 
@@ -859,7 +879,7 @@ function startVoiceSearch() {
 
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   13. AI MOOD DETECTOR (Sentiment Analysis)
+   13. AI MOOD DETECTOR
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function detectMoodWithAI() {
   const promptInput = document.getElementById('aiPrompt');
