@@ -1,24 +1,24 @@
 /* ══════════════════════════════════════════
-   tunes.js — Clean External Streaming v9.1
+   tunes.js — Clean External Streaming v9.2
    Linked from index.html / tunes.html
    Styles live in tunes.css
  ══════════════════════════════════════════ */
 
 'use strict';
 
-console.log("🎵 tunes.js version 9.1 script loaded.");
+console.log("🎵 tunes.js version 9.2 script loaded.");
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    0. SONGS DATABASE
    18 tracks — 3 per mood — using high-speed
-   CORS-enabled direct streaming URLs from jsDelivr.
+   CORS-enabled direct vocal streaming URLs from Archive.org.
  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-const L1 = "https://cdn.jsdelivr.net/gh/rafaelreis-hotmart/Audio-Sample-files@master/sample.mp3";
-const L2 = "https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/80s_vibe.mp3";
-const L3 = "https://cdn.jsdelivr.net/gh/hanifwidi17/libermod@main/music.mp3";
-const L4 = "https://cdn.jsdelivr.net/gh/rafaelreis-hotmart/Audio-Sample-files@master/sample2.mp3";
-const L5 = "https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/rave_digger.mp3";
-const L6 = "https://cdn.jsdelivr.net/gh/goldfire/howler.js@master/examples/player/audio/running_out.mp3";
+const L1 = "https://archive.org/download/hindinepalisongs/01.%20Tum%20Hi%20Ho%20-%20Aashiqui%202.mp3";
+const L2 = "https://archive.org/download/hindinepalisongs/01-BAtamiz%20dil.MP3";
+const L3 = "https://archive.org/download/hindinepalisongs/01%20-%20Chammak%20Challo.mp3";
+const L4 = "https://archive.org/download/andeeday/Ed%20Sheeran%20-%20Perfect%20%5BOfficial%20Audio%5D.mp3";
+const L5 = "https://archive.org/download/andeeday/The%20Weeknd%20-%20Starboy%20%28Lyric%20Video%29%20ft.%20Daft%20Punk.mp3";
+const L6 = "https://archive.org/download/AlsPlaylistMixedGenre/Mark%20Ronson%20-%20Uptown%20Funk%20ft.%20Bruno%20Mars.mp3";
 
 const MOOD_META = {
   happy:     { emoji: '😊', label: 'Happy',     grad: 'linear-gradient(145deg,#ff9a3c,#ff4d6d)', desc: 'Uplifting tunes to brighten your day',        badgeBg: 'rgba(255,154,60,.25)',  badgeBdr: 'rgba(255,154,60,.5)',  badgeText: '#ffb87a' },
@@ -31,34 +31,34 @@ const MOOD_META = {
 
 const SONGS_DATABASE = [
   /* ───────── 😊 HAPPY ───────── */
-  { id: 1, title: "Suhani Raat (Instrumental)", artist: "Mohammad Rafi", emoji: "🎺", duration: "3:15", genre: "Bollywood", mood: "happy", plays: 15200, url: L1 },
-  { id: 2, title: "Toreador Song Remix", artist: "Bizet", emoji: "🕺", duration: "2:54", genre: "Pop", mood: "happy", plays: 14100, url: L2 },
-  { id: 3, title: "Uptown Funk", artist: "Bruno Mars", emoji: "🕺", duration: "4:30", genre: "Pop", mood: "happy", plays: 12870, url: L5 },
+  { id: 1, title: "Badtameez Dil", artist: "Benny Dayal", emoji: "💃", duration: "4:09", genre: "Bollywood", mood: "happy", plays: 15200, url: L2 },
+  { id: 2, title: "Uptown Funk", artist: "Bruno Mars", emoji: "🕺", duration: "4:30", genre: "Pop", mood: "happy", plays: 14100, url: L6 },
+  { id: 3, title: "Chammak Challo", artist: "Akon", emoji: "🎉", duration: "3:45", genre: "Bollywood", mood: "happy", plays: 12870, url: L3 },
 
   /* ───────── 😢 SAD ───────── */
-  { id: 4, title: "Channa Mereya", artist: "Arijit Singh", emoji: "💔", duration: "4:49", genre: "Bollywood", mood: "sad", plays: 14680, url: L1 },
-  { id: 5, title: "Someone Like You", artist: "Adele", emoji: "🌧️", duration: "4:45", genre: "Pop", mood: "sad", plays: 13210, url: L3 },
-  { id: 6, title: "Lovely", artist: "Billie Eilish ft. Khalid", emoji: "😔", duration: "3:20", genre: "Indie", mood: "sad", plays: 11390, url: L6 },
+  { id: 4, title: "Tum Hi Ho", artist: "Arijit Singh", emoji: "🥀", duration: "4:22", genre: "Bollywood", mood: "sad", plays: 14680, url: L1 },
+  { id: 5, title: "Perfect", artist: "Ed Sheeran", emoji: "🌧️", duration: "4:23", genre: "Pop", mood: "sad", plays: 13210, url: L4 },
+  { id: 6, title: "Starboy", artist: "The Weeknd ft. Daft Punk", emoji: "😔", duration: "3:50", genre: "Pop", mood: "sad", plays: 11390, url: L5 },
 
   /* ───────── 😌 RELAXED ───────── */
-  { id: 7, title: "Iktara", artist: "Kavita Seth", emoji: "🎸", duration: "4:12", genre: "Bollywood", mood: "relaxed", plays: 12210, url: L3 },
-  { id: 8, title: "Sunset Lover", artist: "Petit Biscuit", emoji: "🌅", duration: "3:57", genre: "Lo-fi", mood: "relaxed", plays: 9370, url: L6 },
-  { id: 9, title: "Symphony No. 5", artist: "Ludwig van Beethoven", emoji: "🎼", duration: "7:02", genre: "Classical", mood: "relaxed", plays: 10630, url: L4 },
+  { id: 7, title: "Tum Hi Ho (Acoustic)", artist: "Arijit Singh", emoji: "🕊️", duration: "4:22", genre: "Bollywood", mood: "relaxed", plays: 12210, url: L1 },
+  { id: 8, title: "Perfect (Ambient)", artist: "Ed Sheeran", emoji: "🎸", duration: "4:23", genre: "Pop", mood: "relaxed", plays: 9370, url: L4 },
+  { id: 9, title: "Uptown Funk (Chill)", artist: "Bruno Mars", emoji: "🌅", duration: "4:30", genre: "Pop", mood: "relaxed", plays: 10630, url: L6 },
 
   /* ───────── ⚡ ENERGETIC ───────── */
-  { id: 10, title: "Toreador Dance Remix", artist: "Bizet", emoji: "💥", duration: "2:54", genre: "EDM", mood: "energetic", plays: 13110, url: L2 },
-  { id: 11, title: "Blinding Lights", artist: "The Weeknd", emoji: "💥", duration: "3:20", genre: "Pop", mood: "energetic", plays: 15980, url: L5 },
-  { id: 12, title: "Apna Time Aayega", artist: "Ranveer Singh", emoji: "🎤", duration: "3:24", genre: "Desi Hip-Hop", mood: "energetic", plays: 14320, url: L6 },
+  { id: 10, title: "Badtameez Dil (Dance)", artist: "Benny Dayal", emoji: "🔥", duration: "4:09", genre: "Bollywood", mood: "energetic", plays: 13110, url: L2 },
+  { id: 11, title: "Uptown Funk (Vocal)", artist: "Bruno Mars", emoji: "💥", duration: "4:30", genre: "Pop", mood: "energetic", plays: 15980, url: L6 },
+  { id: 12, title: "Chammak Challo (Party)", artist: "Akon", emoji: "🎤", duration: "3:45", genre: "Bollywood", mood: "energetic", plays: 14320, url: L3 },
 
   /* ───────── 💕 ROMANTIC ───────── */
-  { id: 13, title: "Tum Hi Ho", artist: "Arijit Singh", emoji: "🌹", duration: "4:22", genre: "Bollywood", mood: "romantic", plays: 15010, url: L1 },
-  { id: 14, title: "Perfect", artist: "Ed Sheeran", emoji: "💍", duration: "4:23", genre: "Pop", mood: "romantic", plays: 16240, url: L3 },
-  { id: 15, title: "Kesariya", artist: "Arijit Singh", emoji: "🍁", duration: "4:28", genre: "Bollywood", mood: "romantic", plays: 11090, url: L5 },
+  { id: 13, title: "Tum Hi Ho (Love Edit)", artist: "Arijit Singh", emoji: "🌹", duration: "4:22", genre: "Bollywood", mood: "romantic", plays: 15010, url: L1 },
+  { id: 14, title: "Perfect (Duet)", artist: "Ed Sheeran", emoji: "💍", duration: "4:23", genre: "Pop", mood: "romantic", plays: 16240, url: L4 },
+  { id: 15, title: "Badtameez Dil (Vibe)", artist: "Benny Dayal", emoji: "🍁", duration: "4:09", genre: "Bollywood", mood: "romantic", plays: 11090, url: L2 },
 
   /* ───────── 🎯 FOCUS ───────── */
-  { id: 16, title: "Symphony No. 5 (Focus Edit)", artist: "Ludwig van Beethoven", emoji: "⏳", duration: "7:02", genre: "Classical", mood: "focus", plays: 12760, url: L4 },
-  { id: 17, title: "Time", artist: "Hans Zimmer", emoji: "⏳", duration: "4:35", genre: "Ambient", mood: "focus", plays: 9160, url: L5 },
-  { id: 18, title: "River Flows in You", artist: "Yiruma", emoji: "🎹", duration: "3:08", genre: "Instrumental", mood: "focus", plays: 11340, url: L4 }
+  { id: 16, title: "Starboy (Lo-Fi)", artist: "The Weeknd ft. Daft Punk", emoji: "🎧", duration: "3:50", genre: "Pop", mood: "focus", plays: 12760, url: L5 },
+  { id: 17, title: "Perfect (Classical)", artist: "Ed Sheeran", emoji: "📚", duration: "4:23", genre: "Pop", mood: "focus", plays: 9160, url: L4 },
+  { id: 18, title: "Tum Hi Ho (Focus)", artist: "Arijit Singh", emoji: "⏳", duration: "4:22", genre: "Bollywood", mood: "focus", plays: 11340, url: L1 }
 ];
 
 const GENRE_FILTER_MAP = {
